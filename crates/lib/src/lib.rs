@@ -17,7 +17,7 @@ pub struct Game {
     snake: RefCell<VecDeque<Pos>>,
     food: RefCell<Pos>,
     direction: RefCell<MoveTo>,
-    status: RefCell<GameStatus>,
+    stats: RefCell<Stats>,
 }
 
 impl Game {
@@ -30,7 +30,7 @@ impl Game {
             snake: RefCell::new(snake),
             food: RefCell::new((0, 0).into()),
             direction: RefCell::new(MoveTo::Right),
-            status: RefCell::new(GameStatus::Play),
+            stats: RefCell::new(Stats::new()),
         };
         s.update_food();
         s
@@ -45,7 +45,7 @@ impl Game {
     }
 
     fn move_snake(&self, to: MoveTo) {
-        if self.status() == GameStatus::Fail {
+        if self.stats().status == GameStatus::Fail {
             return;
         }
 
@@ -73,8 +73,8 @@ impl Game {
     pub fn food(&self) -> Pos {
         self.food.borrow().to_owned()
     }
-    pub fn status(&self) -> GameStatus {
-        self.status.borrow().to_owned()
+    pub fn stats(&self) -> Stats {
+        self.stats.borrow().clone()
     }
 
     fn head(&self) -> Pos {
@@ -97,6 +97,7 @@ impl Game {
     }
     fn grow_to_pos(&self, to: Pos) {
         self.snake.borrow_mut().push_back(to);
+        self.add_score();
         self.update_food();
     }
     fn update_food(&self) {
@@ -104,7 +105,10 @@ impl Game {
         *self.food.borrow_mut() = food;
     }
     fn set_fail_status(&self) {
-        *self.status.borrow_mut() = GameStatus::Fail;
+        self.stats.borrow_mut().status = GameStatus::Fail;
+    }
+    fn add_score(&self) {
+        self.stats.borrow_mut().score += 1;
     }
     fn set_direction(&self, to: MoveTo) {
         *self.direction.borrow_mut() = to;
@@ -140,6 +144,22 @@ pub enum GameStatus {
     Play,
     Fail,
     // todo: win?
+}
+
+#[derive(Debug, Clone)]
+pub struct Stats {
+    /// Literally snake size - 1
+    pub score: usize,
+    pub status: GameStatus,
+}
+
+impl Stats {
+    fn new() -> Self {
+        Self {
+            score: 0,
+            status: GameStatus::Play,
+        }
+    }
 }
 
 /// Single coordinate

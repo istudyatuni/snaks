@@ -11,12 +11,12 @@ use ratatui::{
     widgets::{
         block::{Position, Title},
         canvas::Canvas,
-        Block, Widget,
+        Block, Paragraph, Widget,
     },
     Frame,
 };
 
-use lib::{Game, MoveTo};
+use lib::{Game, GameStatus, MoveTo};
 
 use crate::snake::SnakeField;
 
@@ -63,9 +63,12 @@ impl App {
 
         let contraints = [Constraint::Percentage(25), Constraint::Percentage(50)];
         let outer = Layout::horizontal(contraints).split(frame.size());
-        let inner = Layout::vertical(contraints).split(outer[1]);
+        let field = Layout::vertical(contraints).split(outer[1]);
+        let stats = Layout::vertical([Constraint::Percentage(75), Constraint::Percentage(25)])
+            .split(field[0]);
 
-        frame.render_widget(self.field_canvas(), inner[1])
+        frame.render_widget(self.stats_page(), stats[1]);
+        frame.render_widget(self.field_canvas(), field[1]);
     }
     fn handle_events(&mut self) -> Result<()> {
         if event::poll(FPS60)? {
@@ -104,6 +107,16 @@ impl App {
             .y_bounds([-90.0, 90.0])
             .marker(DRAW_MARKER)
             .paint(|ctx| ctx.draw(&SnakeField::new(self.game.snake(), self.game.food())))
+    }
+    fn stats_page(&self) -> impl Widget + '_ {
+        let stats = self.game.stats();
+
+        let mut text = vec![vec!["Score ".into(), format!("{}", stats.score).blue()].into()];
+        if stats.status == GameStatus::Fail {
+            // todo: render this on top of field_canvas
+            text.push("Game Over".into());
+        }
+        Paragraph::new(text).block(Block::new())
     }
 }
 
