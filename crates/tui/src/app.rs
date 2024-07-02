@@ -33,6 +33,7 @@ const DRAW_MARKER: Marker = Marker::Block;
 pub struct App {
     game: Game,
     exited: bool,
+    paused: bool,
 }
 
 impl App {
@@ -41,6 +42,7 @@ impl App {
         Self {
             game: Self::new_game(),
             exited: false,
+            paused: false,
         }
     }
     fn new_game() -> Game {
@@ -55,7 +57,9 @@ impl App {
             if snake_tick.elapsed() > SNAKE_FPS {
                 self.handle_events()?;
 
-                self.auto_move_snake();
+                if !self.paused {
+                    self.auto_move_snake();
+                }
                 snake_tick = Instant::now();
             }
         }
@@ -83,9 +87,19 @@ impl App {
         Ok(())
     }
     fn handle_key_event(&mut self, event: KeyEvent) {
+        if self.paused {
+            match event.code {
+                KeyCode::Char('q') => self.exit(),
+                KeyCode::Esc => self.unpause(),
+                _ => {}
+            }
+            return;
+        }
+
         match event.code {
             KeyCode::Char('q') => self.exit(),
             KeyCode::Char('r') => self.restart(),
+            KeyCode::Esc => self.pause(),
             KeyCode::Left => self.move_snake(MoveTo::Left),
             KeyCode::Right => self.move_snake(MoveTo::Right),
             KeyCode::Up => self.move_snake(MoveTo::Up),
@@ -97,8 +111,15 @@ impl App {
     fn exit(&mut self) {
         self.exited = true;
     }
+    fn pause(&mut self) {
+        self.paused = true;
+    }
+    fn unpause(&mut self) {
+        self.paused = false;
+    }
     fn restart(&mut self) {
-        self.game = Self::new_game()
+        self.game = Self::new_game();
+        self.unpause();
     }
     fn auto_move_snake(&self) {
         self.game.auto_move();
@@ -128,6 +149,9 @@ impl App {
             // todo: render this on top of field_canvas
             text.push(msg.into());
         }
+        if self.paused {
+            text.push("Pause".into());
+        }
         Paragraph::new(text).block(Block::new())
     }
 }
@@ -153,6 +177,8 @@ impl Widget for &App {
         instructions.extend(make_keybind("Move", "← ↑ → ↓"));
         instructions.push("|".into());
         instructions.extend(make_keybind("Restart", "r"));
+        instructions.push("|".into());
+        instructions.extend(make_keybind("Pause", "Esc"));
         instructions.push("|".into());
         instructions.extend(make_keybind("Quit", "q"));
         let instructions = Title::from(Line::from(instructions));
