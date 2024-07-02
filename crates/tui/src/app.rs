@@ -121,8 +121,8 @@ impl App {
         let mut text = vec![vec!["Score ".into(), format!("{}", stats.score).blue()].into()];
         if stats.status != GameStatus::Play {
             let msg = match stats.status {
-                GameStatus::Fail => "Game Over",
-                GameStatus::Win => "Win",
+                GameStatus::Fail => "Game Over".red(),
+                GameStatus::Win => "Win".green(),
                 _ => unreachable!(),
             };
             // todo: render this on top of field_canvas
