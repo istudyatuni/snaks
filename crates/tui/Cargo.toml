@@ -1,0 +1,16 @@
+[package]
+name = "snaks-tui"
+version.workspace = true
+
+[[bin]]
+name = "snaks"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+log.workspace = true
+ratatui.workspace = true
+simplelog.workspace = true
+thiserror.workspace = true
+
+core.workspace = true

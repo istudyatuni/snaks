@@ -1,0 +1,17 @@
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/tui"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+
+[workspace.dependencies]
+anyhow = "1.0.86"
+log = "0.4.22"
+ratatui = "0.27.0"
+simplelog = "0.12.2"
+thiserror = "1.0.61"
+
+core = { package = "snaks-lib", path = "crates/lib" }
