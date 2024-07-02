@@ -139,25 +139,22 @@ impl Widget for &App {
     {
         let title = Title::from(" Snake Game ".bold());
         let sp = " ";
-        let instructions = vec![
-            sp.into(),
-            "Move".into(),
-            sp.into(),
-            "← ↑ → ↓".blue().bold(),
-            sp.into(),
-            "|".into(),
-            sp.into(),
-            "Restart".into(),
-            sp.into(),
-            "r".blue().bold(),
-            sp.into(),
-            "|".into(),
-            sp.into(),
-            "Quit".into(),
-            sp.into(),
-            "q".blue().bold(),
-            sp.into(),
-        ];
+
+        let make_keybind = |name: &'static str, key: &'static str| {
+            vec![
+                sp.into(),
+                name.into(),
+                sp.into(),
+                key.blue().bold(),
+                sp.into(),
+            ]
+        };
+        let mut instructions = vec![];
+        instructions.extend(make_keybind("Move", "← ↑ → ↓"));
+        instructions.push("|".into());
+        instructions.extend(make_keybind("Restart", "r"));
+        instructions.push("|".into());
+        instructions.extend(make_keybind("Quit", "q"));
         let instructions = Title::from(Line::from(instructions));
 
         Block::bordered()
