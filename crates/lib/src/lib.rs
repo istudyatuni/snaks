@@ -37,10 +37,14 @@ impl Game {
     }
     /// Determinine next position and move snake
     pub fn auto_move(&self) {
-        self.move_to(self.direction());
+        self.move_snake(self.direction());
     }
     /// Move snake to new position
     pub fn move_to(&self, to: MoveTo) {
+        self.set_direction(to);
+    }
+
+    fn move_snake(&self, to: MoveTo) {
         if self.status() == GameStatus::Fail {
             return;
         }
