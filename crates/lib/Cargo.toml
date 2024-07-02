@@ -2,3 +2,8 @@
 name = "snaks-lib"
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+log.workspace = true
+rand.workspace = true
+thiserror.workspace = true

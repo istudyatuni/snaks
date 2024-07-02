@@ -1,6 +1,7 @@
 [package]
 name = "snaks-tui"
 version.workspace = true
+edition.workspace = true
 
 [[bin]]
 name = "snaks"
@@ -11,6 +12,5 @@ anyhow.workspace = true
 log.workspace = true
 ratatui.workspace = true
 simplelog.workspace = true
-thiserror.workspace = true
 
-core.workspace = true
+lib.workspace = true

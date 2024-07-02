@@ -10,8 +10,9 @@ edition = "2021"
 [workspace.dependencies]
 anyhow = "1.0.86"
 log = "0.4.22"
+rand = "0.8.5"
 ratatui = "0.27.0"
 simplelog = "0.12.2"
 thiserror = "1.0.61"
 
-core = { package = "snaks-lib", path = "crates/lib" }
+lib = { package = "snaks-lib", path = "crates/lib" }
