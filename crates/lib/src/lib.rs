@@ -45,7 +45,7 @@ impl Game {
     }
 
     fn move_snake(&self, to: MoveTo) {
-        if self.stats().status == GameStatus::Fail {
+        if self.stats().status != GameStatus::Play {
             return;
         }
 
@@ -53,7 +53,7 @@ impl Game {
 
         let next = self.get_next_pos(to);
         if self.is_in_snake(next) {
-            self.set_fail_status();
+            self.set_status(GameStatus::Fail);
             return;
         }
         if next == self.food() {
@@ -101,11 +101,16 @@ impl Game {
         self.update_food();
     }
     fn update_food(&self) {
+        if !self.can_place_new_food() {
+            self.set_status(GameStatus::Win);
+            return;
+        }
+
         let food = self.get_new_food();
         *self.food.borrow_mut() = food;
     }
-    fn set_fail_status(&self) {
-        self.stats.borrow_mut().status = GameStatus::Fail;
+    fn set_status(&self, status: GameStatus) {
+        self.stats.borrow_mut().status = status;
     }
     fn add_score(&self) {
         self.stats.borrow_mut().score += 1;
@@ -137,13 +142,17 @@ impl Game {
             }
         }
     }
+
+    fn can_place_new_food(&self) -> bool {
+        self.snake.borrow().len() < self.size.area() as usize
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameStatus {
     Play,
     Fail,
-    // todo: win?
+    Win,
 }
 
 #[derive(Debug, Clone)]
@@ -225,6 +234,10 @@ impl Pos {
     /// Add position with wrapping inside some rectangle
     pub fn wrapping_add(self, rhs: Self, rect: Self) -> Self {
         Self::new((self.x + rhs.x) % rect.x, (self.y + rhs.y) % rect.y)
+    }
+    /// `x * y`
+    fn area(&self) -> CoordType {
+        self.x.0 * self.y.0
     }
 }
 

@@ -119,9 +119,14 @@ impl App {
         let stats = self.game.stats();
 
         let mut text = vec![vec!["Score ".into(), format!("{}", stats.score).blue()].into()];
-        if stats.status == GameStatus::Fail {
+        if stats.status != GameStatus::Play {
+            let msg = match stats.status {
+                GameStatus::Fail => "Game Over",
+                GameStatus::Win => "Win",
+                _ => unreachable!(),
+            };
             // todo: render this on top of field_canvas
-            text.push("Game Over".into());
+            text.push(msg.into());
         }
         Paragraph::new(text).block(Block::new())
     }
