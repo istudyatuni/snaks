@@ -6,16 +6,17 @@ use std::{
 
 use rand::random;
 
-pub type CoordType = i32;
+pub type CoordType = u32;
 
 /// Game state
 ///
-/// (0, 0) is at top left position
+/// `(0, 0)` is at top left position
 #[derive(Debug)]
 pub struct Game {
     size: Pos,
     snake: RefCell<VecDeque<Pos>>,
     food: RefCell<Pos>,
+    status: RefCell<GameStatus>,
 }
 
 impl Game {
@@ -27,13 +28,22 @@ impl Game {
             size,
             snake: RefCell::new(snake),
             food: RefCell::new((0, 0).into()),
+            status: RefCell::new(GameStatus::Play),
         };
         s.update_food();
         s
     }
     /// Move snake to new position
     pub fn move_to(&self, to: MoveTo) {
+        if self.status() == GameStatus::Fail {
+            return;
+        }
+
         let next = self.get_next_pos(to);
+        if self.is_in_snake(next) {
+            self.set_fail_status();
+            return;
+        }
         if next == self.food() {
             self.grow_to_pos(next);
         } else {
@@ -51,9 +61,16 @@ impl Game {
     pub fn food(&self) -> Pos {
         self.food.borrow().to_owned()
     }
+    pub fn status(&self) -> GameStatus {
+        self.status.borrow().to_owned()
+    }
 
     fn head(&self) -> Pos {
-        self.snake.borrow().back().expect("empty").to_owned()
+        self.snake
+            .borrow()
+            .back()
+            .expect("snake can't be empty")
+            .to_owned()
     }
 
     fn move_to_pos(&self, to: Pos) {
@@ -68,36 +85,44 @@ impl Game {
         let food = self.get_new_food();
         *self.food.borrow_mut() = food;
     }
+    fn set_fail_status(&self) {
+        *self.status.borrow_mut() = GameStatus::Fail;
+    }
 
     fn get_next_pos(&self, to: MoveTo) -> Pos {
+        let (x, y) = (self.size.x.0, self.size.y.0);
         let shift = match to {
-            MoveTo::Left => (-1, 0).into(),
-            MoveTo::Right => (1, 0).into(),
-            MoveTo::Up => (0, -1).into(),
-            MoveTo::Down => (0, 1).into(),
+            MoveTo::Left => (x - 1, 0),
+            MoveTo::Right => (x + 1, 0),
+            MoveTo::Up => (0, y - 1),
+            MoveTo::Down => (0, y + 1),
         };
-        self.head() + shift
+        self.head().wrapping_add(shift.into(), self.size)
     }
     fn get_new_food(&self) -> Pos {
         let size = self.size;
-        let snake = self.snake();
         loop {
             let food: Pos = (
                 random::<CoordType>() % size.x.0,
                 random::<CoordType>() % size.y.0,
             )
                 .into();
-            if !snake.contains(&food) {
+            if !self.is_in_snake(food) {
                 return food;
             }
         }
     }
+
+    fn is_in_snake(&self, pos: Pos) -> bool {
+        self.snake.borrow().contains(&pos)
+    }
 }
 
-impl Default for Game {
-    fn default() -> Self {
-        Self::new(20.into(), 10.into(), (10, 5).into())
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GameStatus {
+    Play,
+    Fail,
+    // todo: win?
 }
 
 /// Single coordinate
@@ -159,11 +184,9 @@ impl From<(CoordType, CoordType)> for Pos {
     }
 }
 
-impl Add for Pos {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self::new(self.x + rhs.x, self.y + rhs.y)
+impl From<Pos> for (usize, usize) {
+    fn from(v: Pos) -> Self {
+        (v.x.0 as usize, v.y.0 as usize)
     }
 }
 
