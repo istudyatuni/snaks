@@ -39,9 +39,12 @@ impl App {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            game: Game::new(39.into(), 17.into(), (20, 10).into()),
+            game: Self::new_game(),
             exited: false,
         }
+    }
+    fn new_game() -> Game {
+        Game::new(39.into(), 17.into(), (20, 10).into())
     }
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         let mut snake_tick = Instant::now();
@@ -82,6 +85,7 @@ impl App {
     fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Char('q') => self.exit(),
+            KeyCode::Char('r') => self.restart(),
             KeyCode::Left => self.move_snake(MoveTo::Left),
             KeyCode::Right => self.move_snake(MoveTo::Right),
             KeyCode::Up => self.move_snake(MoveTo::Up),
@@ -92,6 +96,9 @@ impl App {
 
     fn exit(&mut self) {
         self.exited = true;
+    }
+    fn restart(&mut self) {
+        self.game = Self::new_game()
     }
     fn auto_move_snake(&self) {
         self.game.auto_move();
@@ -126,15 +133,29 @@ impl Widget for &App {
         Self: Sized,
     {
         let title = Title::from(" Snake Game ".bold());
-        let instructions = Title::from(Line::from(vec![
-            " Move ".into(),
+        let sp = " ";
+        let instructions = vec![
+            sp.into(),
+            "Move".into(),
+            sp.into(),
             "← ↑ → ↓".blue().bold(),
-            " | ".into(),
+            sp.into(),
+            "|".into(),
+            sp.into(),
+            "Restart".into(),
+            sp.into(),
+            "r".blue().bold(),
+            sp.into(),
+            "|".into(),
+            sp.into(),
             "Quit".into(),
-            " q ".blue().bold(),
+            sp.into(),
+            "q".blue().bold(),
+            sp.into(),
             // " Help ".into(),
             // "h".blue().bold(),
-        ]));
+        ];
+        let instructions = Title::from(Line::from(instructions));
 
         Block::bordered()
             .title(title.alignment(Alignment::Center))
