@@ -14,7 +14,6 @@ cargo install --git https://github.com/istudyatuni/snaks.git
 
 ## Possible improvements
 
-- Ignore when trying to move back instead of failing
 - Draw "Game Over" on top of game field
 - Save top runs
 - Do not hardcode UI sizes

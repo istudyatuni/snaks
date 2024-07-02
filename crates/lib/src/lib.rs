@@ -41,6 +41,11 @@ impl Game {
     }
     /// Move snake to new position
     pub fn move_to(&self, to: MoveTo) {
+        // do not move back
+        // there is still a problem when changing direction very fast
+        if self.direction() == to.opposite() {
+            return;
+        }
         self.set_direction(to);
     }
 
@@ -48,8 +53,6 @@ impl Game {
         if self.stats().status != GameStatus::Play {
             return;
         }
-
-        self.set_direction(to);
 
         let next = self.get_next_pos(to);
         if self.is_in_snake(next) {
@@ -259,4 +262,15 @@ pub enum MoveTo {
     Right,
     Up,
     Down,
+}
+
+impl MoveTo {
+    fn opposite(&self) -> Self {
+        match self {
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
+        }
+    }
 }
