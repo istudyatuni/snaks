@@ -53,11 +53,11 @@ impl App {
             term.draw(|f| self.render_frame(f))?;
 
             if snake_tick.elapsed() > SNAKE_FPS {
+                self.handle_events()?;
+
                 self.auto_move_snake();
                 snake_tick = Instant::now();
             }
-
-            self.handle_events()?;
         }
         Ok(())
     }

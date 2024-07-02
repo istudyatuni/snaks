@@ -38,7 +38,6 @@ impl Game {
     /// Rotate snake to new direction
     pub fn rotate_to(&self, to: MoveTo) {
         // do not move back
-        // there is still a problem when changing direction very fast
         if self.direction() == to.opposite() {
             return;
         }
