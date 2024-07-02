@@ -16,6 +16,7 @@ pub struct Game {
     size: Pos,
     snake: RefCell<VecDeque<Pos>>,
     food: RefCell<Pos>,
+    direction: RefCell<MoveTo>,
     status: RefCell<GameStatus>,
 }
 
@@ -28,16 +29,23 @@ impl Game {
             size,
             snake: RefCell::new(snake),
             food: RefCell::new((0, 0).into()),
+            direction: RefCell::new(MoveTo::Right),
             status: RefCell::new(GameStatus::Play),
         };
         s.update_food();
         s
+    }
+    /// Determinine next position and move snake
+    pub fn auto_move(&self) {
+        self.move_to(self.direction());
     }
     /// Move snake to new position
     pub fn move_to(&self, to: MoveTo) {
         if self.status() == GameStatus::Fail {
             return;
         }
+
+        self.set_direction(to);
 
         let next = self.get_next_pos(to);
         if self.is_in_snake(next) {
@@ -72,6 +80,12 @@ impl Game {
             .expect("snake can't be empty")
             .to_owned()
     }
+    fn direction(&self) -> MoveTo {
+        self.direction.borrow().to_owned()
+    }
+    fn is_in_snake(&self, pos: Pos) -> bool {
+        self.snake.borrow().contains(&pos)
+    }
 
     fn move_to_pos(&self, to: Pos) {
         self.snake.borrow_mut().push_back(to);
@@ -87,6 +101,9 @@ impl Game {
     }
     fn set_fail_status(&self) {
         *self.status.borrow_mut() = GameStatus::Fail;
+    }
+    fn set_direction(&self, to: MoveTo) {
+        *self.direction.borrow_mut() = to;
     }
 
     fn get_next_pos(&self, to: MoveTo) -> Pos {
@@ -111,10 +128,6 @@ impl Game {
                 return food;
             }
         }
-    }
-
-    fn is_in_snake(&self, pos: Pos) -> bool {
-        self.snake.borrow().contains(&pos)
     }
 }
 
@@ -152,6 +165,18 @@ impl Rem for Coord {
     }
 }
 
+impl PartialOrd for Coord {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.0.cmp(&other.0))
+    }
+}
+
+impl Ord for Coord {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.0.cmp(&other.0)
+    }
+}
+
 /// Zero based when used as coordinate
 ///
 /// One based when used as size
@@ -173,8 +198,9 @@ impl Pos {
     pub fn new(x: Coord, y: Coord) -> Self {
         Self { x, y }
     }
-    pub fn wrapping_add(self, rhs: Self, wrap: Self) -> Self {
-        Self::new((self.x + rhs.x) % wrap.x, (self.y + rhs.y) % wrap.y)
+    /// Add position with wrapping inside some rectangle
+    pub fn wrapping_add(self, rhs: Self, rect: Self) -> Self {
+        Self::new((self.x + rhs.x) % rect.x, (self.y + rhs.y) % rect.y)
     }
 }
 

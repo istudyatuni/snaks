@@ -1,3 +1,5 @@
+use std::time::{Duration, Instant};
+
 use anyhow::Result;
 use ratatui::{
     buffer::Buffer,
@@ -18,12 +20,12 @@ use lib::{Game, MoveTo};
 
 use crate::snake::SnakeField;
 
-/*const fn fps(fps: u64) -> Duration {
+const fn fps(fps: u64) -> Duration {
     Duration::from_millis(1000 / fps)
 }
 const FPS60: Duration = fps(60);
 
-const SNAKE_FPS: Duration = fps(20);*/
+const SNAKE_FPS: Duration = fps(10);
 
 const DRAW_MARKER: Marker = Marker::Block;
 
@@ -42,14 +44,17 @@ impl App {
         }
     }
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
-        // let mut last_tick = Instant::now();
+        let mut snake_tick = Instant::now();
 
         while !self.exited {
             term.draw(|f| self.render_frame(f))?;
-            self.handle_events()?;
 
-            // tickrate only affect state changes, not redraw
-            // if last_tick.elapsed() <
+            if snake_tick.elapsed() > SNAKE_FPS {
+                self.auto_move_snake();
+                snake_tick = Instant::now();
+            }
+
+            self.handle_events()?;
         }
         Ok(())
     }
@@ -63,10 +68,12 @@ impl App {
         frame.render_widget(self.field_canvas(), inner[1])
     }
     fn handle_events(&mut self) -> Result<()> {
-        match event::read()? {
-            Event::Key(e) if e.kind == KeyEventKind::Press => self.handle_key_event(e),
-            _ => {}
-        };
+        if event::poll(FPS60)? {
+            match event::read()? {
+                Event::Key(e) if e.kind == KeyEventKind::Press => self.handle_key_event(e),
+                _ => {}
+            }
+        }
         Ok(())
     }
     fn handle_key_event(&mut self, event: KeyEvent) {
@@ -82,6 +89,9 @@ impl App {
 
     fn exit(&mut self) {
         self.exited = true;
+    }
+    fn auto_move_snake(&self) {
+        self.game.auto_move();
     }
     fn move_snake(&self, to: MoveTo) {
         self.game.move_to(to);
