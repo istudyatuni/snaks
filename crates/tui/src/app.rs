@@ -104,7 +104,7 @@ impl App {
         self.game.auto_move();
     }
     fn move_snake(&self, to: MoveTo) {
-        self.game.move_to(to);
+        self.game.rotate_to(to);
     }
 
     fn field_canvas(&self) -> impl Widget + '_ {

@@ -26,7 +26,7 @@ impl Game {
             snake: RefCell::new(snake),
             food: RefCell::new((0, 0).into()),
             direction: RefCell::new(MoveTo::Right),
-            stats: RefCell::new(Stats::new()),
+            stats: RefCell::new(Stats::default()),
         };
         s.update_food();
         s
@@ -35,8 +35,8 @@ impl Game {
     pub fn auto_move(&self) {
         self.move_snake(self.direction());
     }
-    /// Move snake to new position
-    pub fn move_to(&self, to: MoveTo) {
+    /// Rotate snake to new direction
+    pub fn rotate_to(&self, to: MoveTo) {
         // do not move back
         // there is still a problem when changing direction very fast
         if self.direction() == to.opposite() {
@@ -62,9 +62,6 @@ impl Game {
         }
     }
 
-    pub fn size(&self) -> Pos {
-        self.size
-    }
     pub fn snake(&self) -> Vec<Pos> {
         // todo: optimize clone
         self.snake.borrow().to_owned().into()
@@ -131,11 +128,9 @@ impl Game {
     fn get_new_food(&self) -> Pos {
         let size = self.size;
         loop {
-            let food: Pos = (
-                random::<CoordType>() % size.x.0,
-                random::<CoordType>() % size.y.0,
-            )
-                .into();
+            let x = random::<CoordType>() % size.x.0;
+            let y = random::<CoordType>() % size.y.0;
+            let food = (x, y).into();
             if !self.is_in_snake(food) {
                 return food;
             }
@@ -147,25 +142,17 @@ impl Game {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum GameStatus {
+    #[default]
     Play,
     Fail,
     Win,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct Stats {
-    /// Literally snake size - 1
+    /// Count of eaten food
     pub score: usize,
     pub status: GameStatus,
-}
-
-impl Stats {
-    fn new() -> Self {
-        Self {
-            score: 0,
-            status: GameStatus::Play,
-        }
-    }
 }

@@ -2,8 +2,6 @@
 
 Snake in the terminal
 
-## Screenshots
-
 ![](docs/screenshot.jpg)
 
 ## Install

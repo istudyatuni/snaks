@@ -29,18 +29,6 @@ impl Rem for Coord {
     }
 }
 
-impl PartialOrd for Coord {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.0.cmp(&other.0))
-    }
-}
-
-impl Ord for Coord {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.0.cmp(&other.0)
-    }
-}
-
 /// Zero based when used as coordinate
 ///
 /// One based when used as size
@@ -53,7 +41,7 @@ pub struct Pos {
 }
 
 impl Pos {
-    pub fn new(x: Coord, y: Coord) -> Self {
+    pub(crate) fn new(x: Coord, y: Coord) -> Self {
         Self { x, y }
     }
     /// Add position with wrapping inside some rectangle
