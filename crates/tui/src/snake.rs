@@ -28,8 +28,8 @@ impl Shape for SnakeField {
         let mut paint_point = |pos: Pos, color| {
             let (x, y) = pos.into();
             let x = x * 2;
-            // use two boxes for drawing single cell, because 1 box is looks like
-            // cursor, so 2 boxes is like square
+            // use two boxes for drawing single cell, because 1 box looks like
+            // cursor, and 2 boxes looks like square
             painter.paint(x, y, color);
             painter.paint(x + 1, y, color);
         };

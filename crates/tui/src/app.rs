@@ -157,8 +157,6 @@ impl Widget for &App {
             sp.into(),
             "q".blue().bold(),
             sp.into(),
-            // " Help ".into(),
-            // "h".blue().bold(),
         ];
         let instructions = Title::from(Line::from(instructions));
 

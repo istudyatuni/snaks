@@ -224,12 +224,6 @@ pub struct Pos {
     pub y: Coord,
 }
 
-/*#[derive(Debug, Clone, Copy)]
-pub struct Size {
-    pub w: Coord,
-    pub h: Coord,
-}*/
-
 impl Pos {
     pub fn new(x: Coord, y: Coord) -> Self {
         Self { x, y }
