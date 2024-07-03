@@ -1,7 +1,6 @@
 use std::{fmt::Display, time::Duration};
 
-use super::app::{fps, dur2fps};
-
+use super::app::{dur2fps, fps};
 
 #[derive(Debug, Default)]
 pub struct Difficulty {
