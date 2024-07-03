@@ -35,18 +35,25 @@ const SCALE_SIZE: (f64, f64) = (4.1, 2.2);
 #[derive(Debug, Default)]
 pub struct App {
     game: Game,
-    exited: bool,
-    paused: bool,
     block_size: Pos,
     game_size: Pos,
+    state: AppState,
+    paused: bool,
     debug: bool,
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
+enum AppState {
+    #[default]
+    Play,
+    Exit,
 }
 
 impl App {
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         let mut snake_tick = Instant::now();
 
-        while !self.exited {
+        while !self.exited() {
             term.draw(|f| {
                 let size = f.size();
                 let size = Pos::new(size.width as u32, size.height as u32);
@@ -115,8 +122,12 @@ impl App {
         }
     }
 
+    fn exited(&self) -> bool {
+        self.state == AppState::Exit
+    }
+
     fn exit(&mut self) {
-        self.exited = true;
+        self.state = AppState::Exit;
     }
     fn toggle_pause(&mut self) {
         self.paused = !self.paused
