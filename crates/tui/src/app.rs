@@ -147,6 +147,9 @@ impl App {
     fn playing(&self) -> bool {
         self.state == AppState::Play
     }
+    fn is_game_playing(&self) -> bool {
+        self.game.stats().status == GameStatus::Play
+    }
     fn selecting_difficulty(&self) -> bool {
         self.state == AppState::SelectDifficulty
     }
@@ -334,7 +337,7 @@ impl App {
             make_keybind("Cancel", "d", true);
         }
         make_keybind("Restart", "r", true);
-        if self.playing() {
+        if self.playing() && self.is_game_playing() {
             if !self.paused {
                 make_keybind("Pause", "Esc", true);
             } else if self.paused {
