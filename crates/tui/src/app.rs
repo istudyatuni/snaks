@@ -85,25 +85,6 @@ impl App {
         }
         Ok(())
     }
-    fn render_frame(&self, frame: &mut Frame) {
-        frame.render_widget(self, frame.size());
-
-        let contraints = [25, 50];
-        let contraints = contraints.map(Constraint::Percentage);
-        let outer = Layout::horizontal(contraints).split(frame.size());
-        let field = Layout::vertical(contraints).split(outer[1]);
-
-        let contraints = if self.debug { [10, 90] } else { [65, 35] };
-        let contraints = contraints.map(Constraint::Percentage);
-        let stats = Layout::vertical(contraints).split(field[0]);
-
-        frame.render_widget(self.stats_page(), stats[1]);
-        if self.selecting_difficulty() {
-            frame.render_widget(self.difficulty_select(), field[1]);
-        } else {
-            frame.render_widget(self.field_canvas(field[1]), field[1]);
-        }
-    }
 
     // -------- handle events --------
 
@@ -233,6 +214,26 @@ impl App {
 
     // -------- render ui --------
 
+    fn render_frame(&self, frame: &mut Frame) {
+        frame.render_widget(self, frame.size());
+
+        let contraints = [25, 50];
+        let contraints = contraints.map(Constraint::Percentage);
+        let outer = Layout::horizontal(contraints).split(frame.size());
+        let field = Layout::vertical(contraints).split(outer[1]);
+
+        let contraints = if self.debug { [10, 90] } else { [65, 35] };
+        let contraints = contraints.map(Constraint::Percentage);
+        let stats = Layout::vertical(contraints).split(field[0]);
+
+        frame.render_widget(self.stats_block(), stats[1]);
+        if self.selecting_difficulty() {
+            frame.render_widget(self.difficulty_select(), field[1]);
+        } else {
+            frame.render_widget(self.field_canvas(field[1]), field[1]);
+        }
+    }
+    /// Canvas with snake field
     fn field_canvas(&self, size: Rect) -> impl Widget + '_ {
         Canvas::default()
             .block(Block::bordered().cyan())
@@ -241,7 +242,8 @@ impl App {
             .marker(DRAW_MARKER)
             .paint(|ctx| ctx.draw(&SnakeField::new(self.game.snake(), self.game.food())))
     }
-    fn stats_page(&self) -> impl Widget + '_ {
+    /// Statistics + debug info
+    fn stats_block(&self) -> impl Widget + '_ {
         let stats = self.game.stats();
 
         let difficulty = if self.selecting_difficulty() {
@@ -278,6 +280,7 @@ impl App {
         }
         Paragraph::new(text).block(Block::new())
     }
+    /// Block with difficulty select
     fn difficulty_select(&self) -> impl Widget + '_ {
         let mut line = vec!["Select difficulty".bold(), ":".into()];
         for (i, &d) in DIFFICULTIES.iter().enumerate() {
@@ -303,15 +306,10 @@ impl App {
         ];
         Paragraph::new::<Vec<_>>(text).block(Block::new())
     }
-}
 
-impl Widget for &App {
-    fn render(self, area: Rect, buf: &mut Buffer)
-    where
-        Self: Sized,
-    {
-        let title = Title::from(" Snake Game ".bold());
+    // -------- render utilities --------
 
+    fn keybind_help(&self) -> Line<'_> {
         let mut instructions = vec![];
         let mut make_keybind = |name: &'static str, key: &'static str, sep| {
             const SP: &str = " ";
@@ -350,15 +348,20 @@ impl Widget for &App {
             make_keybind("Debug", "F3", true);
         }
         make_keybind("Quit", "q", false);
-        let instructions = Title::from(Line::from(instructions));
+        Line::from(instructions)
+    }
+}
 
+impl Widget for &App {
+    fn render(self, area: Rect, buf: &mut Buffer)
+    where
+        Self: Sized,
+    {
+        let title = Title::from(" Snake Game ".bold());
+        let help = Title::from(self.keybind_help());
         Block::bordered()
             .title(title.alignment(Alignment::Center))
-            .title(
-                instructions
-                    .alignment(Alignment::Center)
-                    .position(Position::Bottom),
-            )
+            .title(help.alignment(Alignment::Center).position(Position::Bottom))
             .border_set(border::THICK)
             .render(area, buf);
     }
