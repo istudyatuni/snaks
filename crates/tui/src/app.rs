@@ -107,9 +107,7 @@ impl App {
 
         if self.selecting_difficulty() {
             match event.code {
-                KeyCode::Char(c @ '1'..='6') => {
-                    self.select_difficulty(DifficultyKind::from_number(c))
-                }
+                KeyCode::Char('s') => self.select_difficulty(DifficultyKind::Secret),
                 KeyCode::Left => self.select_difficulty(self.difficulty.kind.prev()),
                 KeyCode::Right => self.select_difficulty(self.difficulty.kind.next()),
                 KeyCode::Char('d') => self.undo_difficulty(),
@@ -288,8 +286,8 @@ impl App {
     /// Block with difficulty select
     fn difficulty_select(&self) -> impl Widget + '_ {
         let mut line = vec!["Select difficulty".bold(), ":".into()];
-        for (i, &d) in DIFFICULTIES.iter().enumerate() {
-            line.push(format!(" [{}] ", i + 1).into());
+        for d in DIFFICULTIES {
+            line.push(" ".into());
             if d == self.difficulty.kind {
                 line.push(d.to_string().blue());
             } else {
@@ -334,7 +332,7 @@ impl App {
             make_keybind("Move", "← ↑ → ↓", true);
         }
         if self.selecting_difficulty() {
-            make_keybind("Select", "1 2 3 4 5 / ← →", true);
+            make_keybind("Select", "← →", true);
             make_keybind("Submit", "Enter", true);
             make_keybind("Cancel", "d", true);
         }
@@ -430,17 +428,6 @@ impl DifficultyKind {
             Self::Secret => 100,
         };
         DifficultyFps(fps(f))
-    }
-    fn from_number(n: char) -> Self {
-        match n {
-            '1' => Self::Easy,
-            '2' => Self::Normal,
-            '3' => Self::Medium,
-            '4' => Self::Hard,
-            '5' => Self::Impossible,
-            '6' => Self::Secret,
-            _ => Self::default(),
-        }
     }
     /// Use in selector
     fn next(self) -> Self {
