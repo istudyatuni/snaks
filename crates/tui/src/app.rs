@@ -270,7 +270,7 @@ impl App {
             text.push(msg.into());
         }
         if self.paused {
-            text.push("Pause".blue().into());
+            text.push("Pause".yellow().into());
         }
         if self.debug {
             if !self.paused && stats.status == GameStatus::Play {
