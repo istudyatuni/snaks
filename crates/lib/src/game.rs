@@ -30,9 +30,9 @@ impl Game {
         s.update_food();
         s
     }
-    /// Determinine next position and move snake
-    pub fn auto_move(&self) {
-        self.move_snake(self.direction());
+    /// Move snake
+    pub fn move_snake(&self) {
+        self.move_snake_to(self.direction());
     }
     /// Rotate snake to new direction
     pub fn rotate_to(&self, to: MoveTo) {
@@ -43,7 +43,7 @@ impl Game {
         self.set_direction(to);
     }
 
-    fn move_snake(&self, to: MoveTo) {
+    fn move_snake_to(&self, to: MoveTo) {
         if self.stats().status != GameStatus::Play {
             return;
         }

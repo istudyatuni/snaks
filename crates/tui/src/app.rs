@@ -73,7 +73,7 @@ impl App {
                 self.handle_events()?;
 
                 if !self.paused {
-                    self.auto_move_snake();
+                    self.move_snake();
                 }
                 snake_tick = Instant::now();
             }
@@ -126,10 +126,10 @@ impl App {
         }
 
         match event.code {
-            KeyCode::Left => self.move_snake(MoveTo::Left),
-            KeyCode::Right => self.move_snake(MoveTo::Right),
-            KeyCode::Up => self.move_snake(MoveTo::Up),
-            KeyCode::Down => self.move_snake(MoveTo::Down),
+            KeyCode::Left => self.rotate_snake(MoveTo::Left),
+            KeyCode::Right => self.rotate_snake(MoveTo::Right),
+            KeyCode::Up => self.rotate_snake(MoveTo::Up),
+            KeyCode::Down => self.rotate_snake(MoveTo::Down),
             _ => {}
         }
     }
@@ -203,10 +203,10 @@ impl App {
             (y as f64 / SCALE_SIZE.1) as u32,
         );
     }
-    fn auto_move_snake(&self) {
-        self.game.auto_move();
+    fn move_snake(&self) {
+        self.game.move_snake();
     }
-    fn move_snake(&self, to: MoveTo) {
+    fn rotate_snake(&self, to: MoveTo) {
         self.game.rotate_to(to);
     }
 
