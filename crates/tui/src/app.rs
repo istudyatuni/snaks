@@ -1,7 +1,4 @@
-use std::{
-    fmt::Display,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
 use ratatui::{
@@ -21,14 +18,12 @@ use ratatui::{
 
 use lib::{Game, GameStatus, MoveTo, Pos};
 
+use crate::difficulty::*;
 use crate::snake::SnakeField;
 
 // interesting, dur2fps(fps(60)) == 62
-const fn fps(fps: u64) -> Duration {
+pub const fn fps(fps: u64) -> Duration {
     Duration::from_millis(1000 / fps)
-}
-const fn dur2fps(dur: Duration) -> u64 {
-    1000 / dur.as_millis() as u64
 }
 const FPS60: Duration = fps(60);
 
@@ -74,7 +69,7 @@ impl App {
                 self.render_frame(f);
             })?;
 
-            if snake_tick.elapsed() > self.difficulty.fps.0 {
+            if snake_tick.elapsed() > self.difficulty.fps.duration() {
                 self.handle_events()?;
 
                 if !self.paused {
@@ -367,102 +362,5 @@ impl Widget for &App {
             .title(help.alignment(Alignment::Center).position(Position::Bottom))
             .border_set(border::THICK)
             .render(area, buf);
-    }
-}
-
-#[derive(Debug, Default)]
-struct Difficulty {
-    prev: DifficultyKind,
-    kind: DifficultyKind,
-    fps: DifficultyFps,
-}
-
-impl Difficulty {
-    fn update_fps(&mut self) {
-        self.fps = self.kind.to_fps()
-    }
-}
-
-#[derive(Debug)]
-struct DifficultyFps(Duration);
-
-impl Default for DifficultyFps {
-    fn default() -> Self {
-        DifficultyKind::default().to_fps()
-    }
-}
-
-impl Display for DifficultyFps {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", dur2fps(self.0))
-    }
-}
-
-const DIFFICULTIES: [DifficultyKind; 5] = [
-    DifficultyKind::Easy,
-    DifficultyKind::Normal,
-    DifficultyKind::Medium,
-    DifficultyKind::Hard,
-    DifficultyKind::Impossible,
-];
-
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-enum DifficultyKind {
-    Easy,
-    #[default]
-    Normal,
-    Medium,
-    Hard,
-    Impossible,
-    Secret,
-}
-
-impl DifficultyKind {
-    fn to_fps(self) -> DifficultyFps {
-        let f = match self {
-            Self::Easy => 5,
-            Self::Normal => 10,
-            Self::Medium => 15,
-            Self::Hard => 30,
-            Self::Impossible => 60,
-            Self::Secret => 100,
-        };
-        DifficultyFps(fps(f))
-    }
-    /// Use in selector
-    fn next(self) -> Self {
-        match self {
-            Self::Easy => Self::Normal,
-            Self::Normal => Self::Medium,
-            Self::Medium => Self::Hard,
-            Self::Hard => Self::Impossible,
-            Self::Impossible => Self::Easy,
-            Self::Secret => Self::Easy,
-        }
-    }
-    /// Use in selector
-    fn prev(self) -> Self {
-        match self {
-            Self::Easy => Self::Impossible,
-            Self::Normal => Self::Easy,
-            Self::Medium => Self::Normal,
-            Self::Hard => Self::Medium,
-            Self::Impossible => Self::Hard,
-            Self::Secret => Self::Impossible,
-        }
-    }
-}
-
-impl Display for DifficultyKind {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            Self::Easy => "Easy",
-            Self::Normal => "Normal",
-            Self::Medium => "Medium",
-            Self::Hard => "Hard",
-            Self::Impossible => "Impossible",
-            Self::Secret => "Secret",
-        };
-        f.pad(s)
     }
 }
