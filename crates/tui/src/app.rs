@@ -167,6 +167,11 @@ impl App {
         self.reset_app_state();
     }
     fn submit_difficulty(&mut self) {
+        if self.difficulty.prev == self.difficulty.kind {
+            self.unpause();
+            self.reset_app_state();
+            return;
+        }
         self.difficulty.prev = self.difficulty.kind;
         self.difficulty.update_fps();
         self.restart();
