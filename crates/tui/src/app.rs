@@ -339,7 +339,6 @@ impl App {
             show_keybind("Submit", "Enter", true);
             show_keybind("Cancel", "d", true);
         }
-        show_keybind("Restart", "r", true);
         if self.playing() && self.is_game_playing() {
             if !self.paused {
                 show_keybind("Pause", "Esc", true);
@@ -350,6 +349,7 @@ impl App {
         if !self.selecting_difficulty() {
             show_keybind("Difficulty", "d", true);
         }
+        show_keybind("Restart", "r", true);
         if self.debug {
             show_keybind("Debug", "F3", true);
         }
