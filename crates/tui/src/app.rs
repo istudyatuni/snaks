@@ -95,6 +95,7 @@ impl App {
         }
         Ok(())
     }
+    #[allow(clippy::single_match)]
     fn handle_key_event(&mut self, event: KeyEvent) {
         // common keys
         match event.code {
@@ -117,12 +118,21 @@ impl App {
             return;
         }
 
-        // keys when playing + pause
+        // keys when playing
         match event.code {
             KeyCode::Char('d') => {
                 self.toggle_pause();
                 self.set_select_difficulty();
             }
+            _ => {}
+        }
+
+        if !self.is_game_playing() {
+            return;
+        }
+
+        // keys when playing except fail/win
+        match event.code {
             KeyCode::Esc => self.toggle_pause(),
             _ => {}
         }
