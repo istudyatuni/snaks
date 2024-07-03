@@ -110,6 +110,8 @@ impl App {
                 KeyCode::Char(c @ '1'..='6') => {
                     self.select_difficulty(DifficultyKind::from_number(c))
                 }
+                KeyCode::Left => self.select_difficulty(self.difficulty.kind.prev()),
+                KeyCode::Right => self.select_difficulty(self.difficulty.kind.next()),
                 KeyCode::Char('d') => self.undo_difficulty(),
                 KeyCode::Enter => self.submit_difficulty(),
                 _ => {}
@@ -332,7 +334,7 @@ impl App {
             make_keybind("Move", "← ↑ → ↓", true);
         }
         if self.selecting_difficulty() {
-            make_keybind("Select", "1 2 3 4 5", true);
+            make_keybind("Select", "1 2 3 4 5 / ← →", true);
             make_keybind("Submit", "Enter", true);
             make_keybind("Cancel", "d", true);
         }
@@ -420,12 +422,12 @@ enum DifficultyKind {
 impl DifficultyKind {
     fn to_fps(self) -> DifficultyFps {
         let f = match self {
-            DifficultyKind::Easy => 5,
-            DifficultyKind::Normal => 10,
-            DifficultyKind::Medium => 15,
-            DifficultyKind::Hard => 30,
-            DifficultyKind::Impossible => 60,
-            DifficultyKind::Secret => 100,
+            Self::Easy => 5,
+            Self::Normal => 10,
+            Self::Medium => 15,
+            Self::Hard => 30,
+            Self::Impossible => 60,
+            Self::Secret => 100,
         };
         DifficultyFps(fps(f))
     }
@@ -440,17 +442,39 @@ impl DifficultyKind {
             _ => Self::default(),
         }
     }
+    /// Use in selector
+    fn next(self) -> Self {
+        match self {
+            Self::Easy => Self::Normal,
+            Self::Normal => Self::Medium,
+            Self::Medium => Self::Hard,
+            Self::Hard => Self::Impossible,
+            Self::Impossible => Self::Easy,
+            Self::Secret => Self::Easy,
+        }
+    }
+    /// Use in selector
+    fn prev(self) -> Self {
+        match self {
+            Self::Easy => Self::Impossible,
+            Self::Normal => Self::Easy,
+            Self::Medium => Self::Normal,
+            Self::Hard => Self::Medium,
+            Self::Impossible => Self::Hard,
+            Self::Secret => Self::Impossible,
+        }
+    }
 }
 
 impl Display for DifficultyKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            DifficultyKind::Easy => "Easy",
-            DifficultyKind::Normal => "Normal",
-            DifficultyKind::Medium => "Medium",
-            DifficultyKind::Hard => "Hard",
-            DifficultyKind::Impossible => "Impossible",
-            DifficultyKind::Secret => "Secret",
+            Self::Easy => "Easy",
+            Self::Normal => "Normal",
+            Self::Medium => "Medium",
+            Self::Hard => "Hard",
+            Self::Impossible => "Impossible",
+            Self::Secret => "Secret",
         };
         f.pad(s)
     }
