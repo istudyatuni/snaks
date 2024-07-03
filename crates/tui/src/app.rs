@@ -25,6 +25,9 @@ use crate::snake::SnakeField;
 pub const fn fps(fps: u64) -> Duration {
     Duration::from_millis(1000 / fps)
 }
+pub const fn dur2fps(dur: Duration) -> u64 {
+    1000 / dur.as_millis() as u64
+}
 const FPS60: Duration = fps(60);
 
 const DRAW_MARKER: Marker = Marker::Block;

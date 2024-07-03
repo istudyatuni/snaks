@@ -1,10 +1,7 @@
 use std::{fmt::Display, time::Duration};
 
-use super::app::fps;
+use super::app::{fps, dur2fps};
 
-const fn dur2fps(dur: Duration) -> u64 {
-    1000 / dur.as_millis() as u64
-}
 
 #[derive(Debug, Default)]
 pub struct Difficulty {
