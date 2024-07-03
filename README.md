@@ -12,7 +12,6 @@ cargo install --git https://github.com/istudyatuni/snaks.git
 
 ## Possible improvements
 
-- Levels of difficulty
 - Save top runs
 
 Technical:

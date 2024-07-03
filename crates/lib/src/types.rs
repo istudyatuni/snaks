@@ -107,3 +107,15 @@ impl MoveTo {
         }
     }
 }
+
+impl Display for MoveTo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            MoveTo::Left => "←",
+            MoveTo::Right => "→",
+            MoveTo::Up => "↑",
+            MoveTo::Down => "↓",
+        };
+        f.pad(s)
+    }
+}

@@ -70,6 +70,9 @@ impl Game {
     pub fn stats(&self) -> Stats {
         self.stats.borrow().clone()
     }
+    pub fn direction(&self) -> MoveTo {
+        self.direction.borrow().to_owned()
+    }
 
     fn head(&self) -> Pos {
         self.snake
@@ -77,9 +80,6 @@ impl Game {
             .back()
             .expect("snake can't be empty")
             .to_owned()
-    }
-    fn direction(&self) -> MoveTo {
-        self.direction.borrow().to_owned()
     }
     fn is_in_snake(&self, pos: Pos) -> bool {
         self.snake.borrow().contains(&pos)
