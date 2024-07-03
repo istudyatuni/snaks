@@ -36,8 +36,8 @@ impl Game {
     }
     /// Rotate snake to new direction
     pub fn rotate_to(&self, to: MoveTo) {
-        // do not move back
-        if self.direction() == to.opposite() {
+        // do not move back if snake has > 1 cells
+        if self.direction() == to.opposite() && self.stats().score > 0 {
             return;
         }
         self.set_direction(to);
