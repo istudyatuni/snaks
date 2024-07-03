@@ -13,3 +13,7 @@ rand = "0.8.5"
 ratatui = "0.27.0"
 
 lib = { package = "snaks-lib", path = "crates/lib" }
+
+[profile.release]
+strip = true
+lto = true
