@@ -11,3 +11,7 @@ check:
 
 format:
 	cargo fmt --all
+
+# build static
+build:
+	cargo b --release --target=x86_64-unknown-linux-musl
