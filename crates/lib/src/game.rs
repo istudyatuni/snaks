@@ -7,7 +7,7 @@ use crate::types::*;
 /// Game state
 ///
 /// `(0, 0)` is at top left position
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Game {
     size: Pos,
     snake: RefCell<VecDeque<Pos>>,
@@ -17,10 +17,9 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(width: Coord, height: Coord, start: Pos) -> Self {
-        let size = Pos::new(width, height);
-        let mut snake = VecDeque::with_capacity(width.0.saturating_mul(height.0) as usize);
-        snake.push_back(start);
+    pub fn new(size: Pos) -> Self {
+        let mut snake = VecDeque::with_capacity(size.x.0.saturating_mul(size.y.0) as usize);
+        snake.push_back((size.x / 2, size.y / 2).into());
         let s = Self {
             size,
             snake: RefCell::new(snake),

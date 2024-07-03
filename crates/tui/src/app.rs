@@ -16,7 +16,7 @@ use ratatui::{
     Frame,
 };
 
-use lib::{Game, GameStatus, MoveTo};
+use lib::{Game, GameStatus, MoveTo, Pos};
 
 use crate::snake::SnakeField;
 
@@ -29,30 +29,48 @@ const SNAKE_FPS: Duration = fps(10);
 
 const DRAW_MARKER: Marker = Marker::Block;
 
+/// Scale frame size to number of cells
+const SCALE_SIZE: (f64, f64) = (4.1, 2.2);
+
 #[derive(Debug)]
 pub struct App {
     game: Game,
     exited: bool,
     paused: bool,
+    block_size: Pos,
+    game_size: Pos,
+    debug: bool,
 }
 
 impl App {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
-            game: Self::new_game(),
+            game: Game::default(),
             exited: false,
             paused: false,
+            // default to resize on first draw
+            block_size: Pos::default(),
+            game_size: Pos::default(),
+            debug: false,
         }
     }
-    fn new_game() -> Game {
-        Game::new(39.into(), 17.into(), (20, 10).into())
+    fn new_game(size: Pos) -> Game {
+        Game::new(size)
     }
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         let mut snake_tick = Instant::now();
 
         while !self.exited {
-            term.draw(|f| self.render_frame(f))?;
+            term.draw(|f| {
+                let size = f.size();
+                let size = Pos::new(size.width as u32, size.height as u32);
+                if size != self.block_size {
+                    self.block_size = size;
+                    self.restart();
+                }
+                self.render_frame(f);
+            })?;
 
             if snake_tick.elapsed() > SNAKE_FPS {
                 self.handle_events()?;
@@ -68,14 +86,17 @@ impl App {
     fn render_frame(&self, frame: &mut Frame) {
         frame.render_widget(self, frame.size());
 
-        let contraints = [Constraint::Percentage(25), Constraint::Percentage(50)];
+        let contraints = [25, 50];
+        let contraints = contraints.map(Constraint::Percentage);
         let outer = Layout::horizontal(contraints).split(frame.size());
         let field = Layout::vertical(contraints).split(outer[1]);
-        let stats = Layout::vertical([Constraint::Percentage(75), Constraint::Percentage(25)])
-            .split(field[0]);
+
+        let contraints = if self.debug { [10, 90] } else { [75, 25] };
+        let contraints = contraints.map(Constraint::Percentage);
+        let stats = Layout::vertical(contraints).split(field[0]);
 
         frame.render_widget(self.stats_page(), stats[1]);
-        frame.render_widget(self.field_canvas(), field[1]);
+        frame.render_widget(self.field_canvas(field[1]), field[1]);
     }
     fn handle_events(&mut self) -> Result<()> {
         if event::poll(FPS60)? {
@@ -87,19 +108,19 @@ impl App {
         Ok(())
     }
     fn handle_key_event(&mut self, event: KeyEvent) {
+        match event.code {
+            KeyCode::Char('q') => self.exit(),
+            KeyCode::Char('r') => self.restart(),
+            KeyCode::Esc => self.toggle_pause(),
+            KeyCode::Char('d') => self.toggle_debug(),
+            _ => {}
+        }
+
         if self.paused {
-            match event.code {
-                KeyCode::Char('q') => self.exit(),
-                KeyCode::Esc => self.unpause(),
-                _ => {}
-            }
             return;
         }
 
         match event.code {
-            KeyCode::Char('q') => self.exit(),
-            KeyCode::Char('r') => self.restart(),
-            KeyCode::Esc => self.pause(),
             KeyCode::Left => self.move_snake(MoveTo::Left),
             KeyCode::Right => self.move_snake(MoveTo::Right),
             KeyCode::Up => self.move_snake(MoveTo::Up),
@@ -111,15 +132,26 @@ impl App {
     fn exit(&mut self) {
         self.exited = true;
     }
-    fn pause(&mut self) {
-        self.paused = true;
+    fn toggle_pause(&mut self) {
+        self.paused = !self.paused
+    }
+    fn toggle_debug(&mut self) {
+        self.debug = !self.debug
     }
     fn unpause(&mut self) {
         self.paused = false;
     }
     fn restart(&mut self) {
-        self.game = Self::new_game();
+        self.scale_game_field();
+        self.game = Self::new_game(self.game_size);
         self.unpause();
+    }
+    fn scale_game_field(&mut self) {
+        let (x, y) = self.block_size.into();
+        self.game_size = Pos::new(
+            (x as f64 / SCALE_SIZE.0) as u32,
+            (y as f64 / SCALE_SIZE.1) as u32,
+        );
     }
     fn auto_move_snake(&self) {
         self.game.auto_move();
@@ -128,11 +160,11 @@ impl App {
         self.game.rotate_to(to);
     }
 
-    fn field_canvas(&self) -> impl Widget + '_ {
+    fn field_canvas(&self, size: Rect) -> impl Widget + '_ {
         Canvas::default()
             .block(Block::bordered().cyan())
-            .x_bounds([-180.0, 180.0])
-            .y_bounds([-90.0, 90.0])
+            .x_bounds([0.0, size.width as f64])
+            .y_bounds([0.0, size.height as f64])
             .marker(DRAW_MARKER)
             .paint(|ctx| ctx.draw(&SnakeField::new(self.game.snake(), self.game.food())))
     }
@@ -144,13 +176,22 @@ impl App {
             let msg = match stats.status {
                 GameStatus::Fail => "Game Over".red(),
                 GameStatus::Win => "Win".green(),
-                _ => unreachable!(),
+                GameStatus::Play => unreachable!(),
             };
             // todo: render this on top of field_canvas
             text.push(msg.into());
         }
         if self.paused {
             text.push("Pause".into());
+        }
+        if self.debug {
+            if !self.paused && stats.status == GameStatus::Play {
+                text.push("".into());
+            }
+            text.push(format!("Block size (in px): {}", self.block_size).into());
+            text.push(format!("Field size: {}", self.game_size).into());
+            text.push(format!("Food at: {}", self.game.food()).into());
+            text.push(format!("Snake head at: {}", self.game.snake().last().unwrap()).into());
         }
         Paragraph::new(text).block(Block::new())
     }
@@ -181,6 +222,9 @@ impl Widget for &App {
         make_keybind("Move", "← ↑ → ↓", true);
         make_keybind("Restart", "r", true);
         make_keybind("Pause", "Esc", true);
+        if self.debug {
+            make_keybind("Debug", "d", true);
+        }
         make_keybind("Quit", "q", false);
         let instructions = Title::from(Line::from(instructions));
 

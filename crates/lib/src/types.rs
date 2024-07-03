@@ -1,9 +1,12 @@
-use std::ops::{Add, Rem};
+use std::{
+    fmt::Display,
+    ops::{Add, Div, Rem},
+};
 
 pub type CoordType = u32;
 
 /// Single coordinate
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 #[repr(transparent)]
 pub struct Coord(pub(crate) CoordType);
 
@@ -29,10 +32,17 @@ impl Rem for Coord {
     }
 }
 
-/// Zero based when used as coordinate
-///
-/// One based when used as size
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+impl Div<CoordType> for Coord {
+    type Output = CoordType;
+
+    fn div(self, rhs: CoordType) -> Self::Output {
+        self.0.div(rhs)
+    }
+}
+
+/// - 0-based when used as coordinate
+/// - 1-based when used as size
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct Pos {
     /// Coordinate on horizontal axis
     pub x: Coord,
@@ -41,12 +51,18 @@ pub struct Pos {
 }
 
 impl Pos {
-    pub(crate) fn new(x: Coord, y: Coord) -> Self {
+    pub const fn new(x: CoordType, y: CoordType) -> Self {
+        Self {
+            x: Coord(x),
+            y: Coord(y),
+        }
+    }
+    pub(crate) fn new_coord(x: Coord, y: Coord) -> Self {
         Self { x, y }
     }
     /// Add position with wrapping inside some rectangle
     pub fn wrapping_add(self, rhs: Self, rect: Self) -> Self {
-        Self::new((self.x + rhs.x) % rect.x, (self.y + rhs.y) % rect.y)
+        Self::new_coord((self.x + rhs.x) % rect.x, (self.y + rhs.y) % rect.y)
     }
     /// `x * y`
     pub(crate) fn area(&self) -> CoordType {
@@ -56,7 +72,7 @@ impl Pos {
 
 impl From<(CoordType, CoordType)> for Pos {
     fn from((x, y): (CoordType, CoordType)) -> Self {
-        Self::new(x.into(), y.into())
+        Self::new(x, y)
     }
 }
 
@@ -66,9 +82,16 @@ impl From<Pos> for (usize, usize) {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+impl Display for Pos {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x.0, self.y.0)
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum MoveTo {
     Left,
+    #[default]
     Right,
     Up,
     Down,

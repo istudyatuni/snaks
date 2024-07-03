@@ -18,4 +18,3 @@ cargo install --git https://github.com/istudyatuni/snaks.git
 Technical:
 
 - Draw "Game Over" on top of game field
-- Do not hardcode UI sizes

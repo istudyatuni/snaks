@@ -7,6 +7,7 @@ args := "--workspace"
 check:
 	cargo c {{args}}
 	cargo clippy {{args}}
+	cargo fmt --check
 
 format:
 	cargo fmt --all
