@@ -309,7 +309,7 @@ impl App {
 
     fn keybind_help(&self) -> Line<'_> {
         let mut instructions = vec![];
-        let mut make_keybind = |name: &'static str, key: &'static str, sep| {
+        let mut show_keybind = |name: &'static str, key: &'static str, sep| {
             const SP: &str = " ";
             const SEP: &str = "|";
             instructions.extend(vec![
@@ -324,28 +324,28 @@ impl App {
             }
         };
         if self.playing() {
-            make_keybind("Move", "← ↑ → ↓", true);
+            show_keybind("Move", "← ↑ → ↓", true);
         }
         if self.selecting_difficulty() {
-            make_keybind("Select", "← →", true);
-            make_keybind("Submit", "Enter", true);
-            make_keybind("Cancel", "d", true);
+            show_keybind("Select", "← →", true);
+            show_keybind("Submit", "Enter", true);
+            show_keybind("Cancel", "d", true);
         }
-        make_keybind("Restart", "r", true);
+        show_keybind("Restart", "r", true);
         if self.playing() && self.is_game_playing() {
             if !self.paused {
-                make_keybind("Pause", "Esc", true);
+                show_keybind("Pause", "Esc", true);
             } else if self.paused {
-                make_keybind("Resume", "Esc", true);
+                show_keybind("Resume", "Esc", true);
             }
         }
         if !self.selecting_difficulty() {
-            make_keybind("Difficulty", "d", true);
+            show_keybind("Difficulty", "d", true);
         }
         if self.debug {
-            make_keybind("Debug", "F3", true);
+            show_keybind("Debug", "F3", true);
         }
-        make_keybind("Quit", "q", false);
+        show_keybind("Quit", "q", false);
         Line::from(instructions)
     }
 }
