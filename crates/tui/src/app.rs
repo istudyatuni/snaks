@@ -96,6 +96,7 @@ impl App {
         Ok(())
     }
     fn handle_key_event(&mut self, event: KeyEvent) {
+        // common keys
         match event.code {
             KeyCode::Char('q') => self.exit(),
             KeyCode::Char('r') => self.restart(),
@@ -103,6 +104,7 @@ impl App {
             _ => {}
         }
 
+        // keys for selecting difficulty
         if self.selecting_difficulty() {
             match event.code {
                 KeyCode::Char('s') => self.select_difficulty(DifficultyKind::Secret),
@@ -115,6 +117,7 @@ impl App {
             return;
         }
 
+        // keys when playing + pause
         match event.code {
             KeyCode::Char('d') => {
                 self.toggle_pause();
@@ -128,6 +131,7 @@ impl App {
             return;
         }
 
+        // keys for snake rotate
         match event.code {
             KeyCode::Left => self.rotate_snake(MoveTo::Left),
             KeyCode::Right => self.rotate_snake(MoveTo::Right),
@@ -167,6 +171,8 @@ impl App {
         self.difficulty.update_fps();
         self.restart();
     }
+
+    // -------- set game states --------
 
     fn exit(&mut self) {
         self.state = AppState::Exit;
@@ -328,8 +334,7 @@ impl App {
         };
         if self.playing() {
             show_keybind("Move", "← ↑ → ↓", true);
-        }
-        if self.selecting_difficulty() {
+        } else if self.selecting_difficulty() {
             show_keybind("Select", "← →", true);
             show_keybind("Submit", "Enter", true);
             show_keybind("Cancel", "d", true);
