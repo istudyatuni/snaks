@@ -32,7 +32,7 @@ const DRAW_MARKER: Marker = Marker::Block;
 /// Scale frame size to number of cells
 const SCALE_SIZE: (f64, f64) = (4.1, 2.2);
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct App {
     game: Game,
     exited: bool,
@@ -43,21 +43,6 @@ pub struct App {
 }
 
 impl App {
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            game: Game::default(),
-            exited: false,
-            paused: false,
-            // default to resize on first draw
-            block_size: Pos::default(),
-            game_size: Pos::default(),
-            debug: false,
-        }
-    }
-    fn new_game(size: Pos) -> Game {
-        Game::new(size)
-    }
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         let mut snake_tick = Instant::now();
 
@@ -65,6 +50,7 @@ impl App {
             term.draw(|f| {
                 let size = f.size();
                 let size = Pos::new(size.width as u32, size.height as u32);
+                // resize field
                 if size != self.block_size {
                     self.block_size = size;
                     self.restart();
@@ -143,7 +129,7 @@ impl App {
     }
     fn restart(&mut self) {
         self.scale_game_field();
-        self.game = Self::new_game(self.game_size);
+        self.game = Game::new(self.game_size);
         self.unpause();
     }
     fn scale_game_field(&mut self) {

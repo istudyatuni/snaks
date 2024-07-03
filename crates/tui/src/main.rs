@@ -3,7 +3,7 @@ mod snake;
 mod tui;
 
 fn main() -> anyhow::Result<()> {
-    let res = app::App::new().run(&mut tui::init()?);
+    let res = app::App::default().run(&mut tui::init()?);
     tui::restore()?;
     res
 }
