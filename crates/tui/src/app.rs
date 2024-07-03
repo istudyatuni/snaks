@@ -248,7 +248,7 @@ impl App {
         let contraints = contraints.map(Constraint::Percentage);
         let stats = Layout::vertical(contraints).split(field[0]);
 
-        frame.render_widget(self.stats_block(), stats[1]);
+        frame.render_widget(self.info_block(), stats[1]);
         if self.selecting_difficulty() {
             frame.render_widget(self.difficulty_select(), field[1]);
         } else {
@@ -264,8 +264,8 @@ impl App {
             .marker(DRAW_MARKER)
             .paint(|ctx| ctx.draw(&SnakeField::new(self.game.snake(), self.game.food())))
     }
-    /// Statistics + debug info
-    fn stats_block(&self) -> impl Widget + '_ {
+    /// Game info + debug info
+    fn info_block(&self) -> impl Widget + '_ {
         let stats = self.game.stats();
 
         let difficulty = if self.selecting_difficulty() {
@@ -286,11 +286,12 @@ impl App {
             // todo: render this on top of field_canvas
             text.push(msg.into());
         }
-        if self.paused {
+        let show_pause = self.paused && !self.selecting_difficulty();
+        if show_pause {
             text.push("Pause".yellow().into());
         }
         if self.debug {
-            if !self.paused && stats.status == GameStatus::Play {
+            if !show_pause && stats.status == GameStatus::Play {
                 text.push("".into());
             }
             text.push(format!("Block size: {}", self.block_size).into());
