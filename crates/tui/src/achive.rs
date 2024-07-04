@@ -30,7 +30,6 @@ impl Ord for Achivement {
 
 pub fn save_achivement(achivement: Achivement) -> Result<()> {
     let mut achivements = read_achivements()?;
-    achivements.sort_unstable();
     if let Some(found) = achivements
         .iter_mut()
         .find(|e| e.username == achivement.username && e.difficulty == achivement.difficulty)
@@ -41,6 +40,7 @@ pub fn save_achivement(achivement: Achivement) -> Result<()> {
     } else {
         achivements.push(achivement);
     }
+    achivements.sort_unstable();
 
     let res = achivements
         .into_iter()
