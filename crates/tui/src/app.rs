@@ -127,7 +127,7 @@ impl App {
             _ => {}
         }
 
-        if !self.is_game_playing() {
+        if self.game_ended() {
             return;
         }
 
@@ -159,8 +159,8 @@ impl App {
     fn playing(&self) -> bool {
         self.state == AppState::Play
     }
-    fn is_game_playing(&self) -> bool {
-        self.game.stats().status == GameStatus::Play
+    fn game_ended(&self) -> bool {
+        self.game.stats().status != GameStatus::Play
     }
     fn selecting_difficulty(&self) -> bool {
         self.state == AppState::SelectDifficulty
@@ -284,7 +284,7 @@ impl App {
             vec!["Score ".blue(), format!("{}", stats.score).into()].into(),
             vec!["Difficulty ".blue(), format!("{difficulty}").into()].into(),
         ];
-        if stats.status != GameStatus::Play {
+        if self.game_ended() {
             let msg = match stats.status {
                 GameStatus::Fail => "Game Over".red(),
                 GameStatus::Win => "Win".green(),
@@ -365,7 +365,7 @@ impl App {
             show_keybind("Submit", "Enter", true);
             show_keybind("Cancel", "d", true);
         }
-        if self.playing() && self.is_game_playing() {
+        if self.playing() && !self.game_ended() {
             if !self.paused {
                 show_keybind("Pause", "Esc", true);
             } else if self.paused {
