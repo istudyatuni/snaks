@@ -5,7 +5,7 @@ use anyhow::{anyhow, Context, Result};
 use crate::difficulty::DifficultyKind;
 
 const FILE: &str = "achivements.csv";
-const SEP: &str = ";";
+const SEP: &str = ",";
 
 pub type AchivementMap = HashMap<String, Vec<Achivement>>;
 
