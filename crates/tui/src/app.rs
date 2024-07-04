@@ -49,9 +49,12 @@ pub struct App {
     game_size: Pos,
     state: AppState,
     difficulty: Difficulty,
+
     ui_fps: Duration,
     event_fps: Duration,
     paused: bool,
+
+    show_all_achivements: bool,
     achivements: Vec<Achivement>,
 
     debug: bool,
@@ -151,6 +154,7 @@ impl App {
                 self.toggle_pause();
                 self.set_select_difficulty();
             }
+            KeyCode::Char('a') => self.toggle_all_achivements(),
             _ => {}
         }
 
@@ -271,6 +275,9 @@ impl App {
     }
     fn reset_app_state(&mut self) {
         self.state = AppState::Play;
+    }
+    fn toggle_all_achivements(&mut self) {
+        self.show_all_achivements = !self.show_all_achivements;
     }
 
     // -------- set game values --------
@@ -406,25 +413,36 @@ impl App {
         let achivements: Vec<_> = self
             .achivements
             .iter()
-            .filter(|a| a.difficulty == self.difficulty.kind)
+            .filter(|a| {
+                if self.show_all_achivements {
+                    true
+                } else {
+                    a.difficulty == self.difficulty.kind
+                }
+            })
             .map(|a| {
-                vec![
+                let mut line = vec![
                     a.username.to_owned().blue(),
                     " ".into(),
                     a.score.to_string().into(),
-                ]
-                .into()
+                ];
+                if self.show_all_achivements {
+                    line.extend_from_slice(&[" ".into(), a.difficulty.to_string().blue()]);
+                }
+                line.into()
             })
             .collect();
 
-        let mut text: Vec<_> = vec![
-            vec![
+        let mut text: Vec<_> = if self.show_all_achivements {
+            vec![vec!["Achivements".into()].into()]
+        } else {
+            vec![vec![
                 "Achivements on ".into(),
                 self.difficulty.kind.to_string().blue(),
             ]
-            .into(),
-            "".into(),
-        ];
+            .into()]
+        };
+        text.push("".into());
         text.extend_from_slice(&achivements);
 
         Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
@@ -463,6 +481,11 @@ impl App {
             }
         }
         if !self.selecting_difficulty() {
+            if self.show_all_achivements {
+                show_keybind("Hide all achivements", "a", true);
+            } else {
+                show_keybind("Show all achivements", "a", true);
+            }
             show_keybind("Difficulty", "d", true);
         }
         show_keybind("Restart", "r", true);
