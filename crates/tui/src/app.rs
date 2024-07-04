@@ -16,7 +16,7 @@ use ratatui::{
     Frame,
 };
 
-use lib::{Game, GameStatus, MoveTo, Pos};
+use lib::{CoordType, Game, GameStatus, MoveTo, Pos};
 
 use crate::difficulty::*;
 use crate::snake::SnakeField;
@@ -74,7 +74,7 @@ impl App {
             global_tick = Instant::now();
             term.draw(|f| {
                 let size = f.size();
-                let size = Pos::new(size.width as u32, size.height as u32);
+                let size = Pos::new(size.width as CoordType, size.height as CoordType);
                 // resize field
                 if size != self.block_size {
                     self.block_size = size;
@@ -242,8 +242,8 @@ impl App {
     fn scale_game_field(&mut self) {
         let (x, y) = self.block_size.into();
         self.game_size = Pos::new(
-            (x as f64 / SCALE_SIZE.0) as u32,
-            (y as f64 / SCALE_SIZE.1) as u32,
+            (x as f64 / SCALE_SIZE.0) as CoordType,
+            (y as f64 / SCALE_SIZE.1) as CoordType,
         );
     }
     fn move_snake(&self) {
