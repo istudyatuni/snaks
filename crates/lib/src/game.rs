@@ -84,7 +84,7 @@ impl Game {
     }
     /// Last occured event
     pub fn last_event(&self) -> Option<GameEvent> {
-        self.last_event.borrow_mut().take().to_owned()
+        self.last_event.borrow().to_owned()
     }
     /// Mark event processed
     pub fn forgot_event(&self, event: GameEvent) {
