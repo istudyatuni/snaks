@@ -28,6 +28,7 @@ pub const fn fps(fps: u64) -> Duration {
 pub const fn dur2fps(dur: Duration) -> u64 {
     1000 / dur.as_millis() as u64
 }
+const FPS20: Duration = fps(20);
 const FPS60: Duration = fps(60);
 
 const DRAW_MARKER: Marker = Marker::Block;
@@ -58,9 +59,14 @@ impl App {
     // -------- run --------
 
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
+        let mut global_tick = Instant::now();
         let mut snake_tick = Instant::now();
 
         while !self.exited() {
+            if global_tick.elapsed() < FPS20 {
+                std::thread::sleep(FPS20 - global_tick.elapsed());
+            }
+            global_tick = Instant::now();
             term.draw(|f| {
                 let size = f.size();
                 let size = Pos::new(size.width as u32, size.height as u32);
