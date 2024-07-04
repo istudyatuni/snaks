@@ -10,6 +10,12 @@ pub type CoordType = u32;
 #[repr(transparent)]
 pub struct Coord(pub(crate) CoordType);
 
+impl Display for Coord {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 impl From<CoordType> for Coord {
     fn from(value: CoordType) -> Self {
         Self(value)
@@ -84,7 +90,7 @@ impl From<Pos> for (usize, usize) {
 
 impl Display for Pos {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {})", self.x.0, self.y.0)
+        write!(f, "({}, {})", self.x, self.y)
     }
 }
 

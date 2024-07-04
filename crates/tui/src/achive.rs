@@ -9,11 +9,23 @@ const SEP: &str = ";";
 
 pub type AchivementMap = HashMap<String, Vec<Achivement>>;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Achivement {
     pub username: String,
     pub difficulty: DifficultyKind,
     pub score: usize,
+}
+
+impl PartialOrd for Achivement {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Achivement {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        (&self.username, self.difficulty).cmp(&(&other.username, other.difficulty))
+    }
 }
 
 pub fn save_achivement(achivement: Achivement) -> Result<()> {
@@ -36,16 +48,17 @@ pub fn save_achivement(achivement: Achivement) -> Result<()> {
             if a.username.contains(SEP) {
                 return Err(anyhow!("username cannot contain {SEP}"));
             }
-            Ok(format!(
-                "{}{SEP}{}{SEP}{}\n",
+            Ok([
                 a.username,
                 a.difficulty.to_string().to_lowercase(),
-                a.score,
-            ))
+                a.score.to_string(),
+            ]
+            .join(SEP)
+                + "\n")
         })
         .collect::<Result<String>>()?;
 
-    let res = format!("{}\n{res}", achivements_header());
+    let res = achivements_header() + "\n" + res.as_str();
     std::fs::write(achivements_file(), res).context("failed to write achivements")?;
 
     Ok(())
@@ -65,10 +78,10 @@ pub fn read_achivements() -> Result<Vec<Achivement>> {
         .skip(1)
         .map(|l| l.split(SEP).map(|v| v.trim()).collect())
         .map(|l: Vec<_>| {
-            if l.len() != 3 {
+            let &[username, difficulty, score] = l.as_slice() else {
                 return Err(anyhow!("unexpected elements count in entry"));
-            }
-            let (username, difficulty, score) = (l[0], l[1], l[2]);
+            };
+
             Ok(Achivement {
                 username: username.to_owned(),
                 difficulty: DifficultyKind::from_str(difficulty)
@@ -91,7 +104,7 @@ pub fn achivements2map(achivements: Vec<Achivement>) -> AchivementMap {
 }
 
 fn achivements_header() -> String {
-    format!("username{SEP}difficulty{SEP}score")
+    ["username", "difficulty", "score"].join(SEP)
 }
 
 fn achivements_file() -> PathBuf {
