@@ -16,7 +16,7 @@ use ratatui::{
     Frame,
 };
 
-use lib::{CoordType, Game, GameStatus, MoveTo, Pos};
+use lib::{CoordType, Game, GameEvent, GameStatus, MoveTo, Pos};
 
 use crate::{
     achive::{achivements2map, read_achivements, AchivementMap},
@@ -102,6 +102,14 @@ impl App {
                 self.render_frame(f);
             })?;
 
+            if let Some(e) = self.game.last_event() {
+                if e == GameEvent::FoodEat {
+                    self.update_achivement();
+                    self.handle_error()?;
+                    self.game.forgot_event(e);
+                }
+            }
+
             if snake_tick.elapsed() > self.difficulty.fps.duration() {
                 self.handle_events()?;
 
@@ -111,9 +119,6 @@ impl App {
                 snake_tick = Instant::now();
             }
         }
-
-        self.save_achivement();
-        self.handle_error()?;
 
         Ok(())
     }
@@ -242,6 +247,10 @@ impl App {
             dur2fps(self.event_fps),
         );
     }
+    fn update_achivement(&mut self) {
+        self.save_achivement();
+        self.read_achivement();
+    }
     fn save_achivement(&mut self) {
         if let e @ Err(_) = save_achivement(Achivement {
             username: whoami::username(),
@@ -250,6 +259,8 @@ impl App {
         }) {
             self.error = Some(e);
         }
+    }
+    fn read_achivement(&mut self) {
         match read_achivements() {
             Ok(a) => self.achivements = a,
             e @ Err(_) => {
@@ -291,8 +302,7 @@ impl App {
     // -------- set game values --------
 
     fn restart(&mut self) {
-        self.save_achivement();
-
+        self.read_achivement();
         self.scale_game_field();
         self.game = Game::new(self.game_size);
         self.reset_difficulty();
