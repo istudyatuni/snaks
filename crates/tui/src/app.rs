@@ -78,6 +78,8 @@ impl App {
     // -------- run --------
 
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
+        self.read_achivement();
+
         let mut global_tick = Instant::now();
         let mut snake_tick = Instant::now();
 
@@ -302,7 +304,6 @@ impl App {
     // -------- set game values --------
 
     fn restart(&mut self) {
-        self.read_achivement();
         self.scale_game_field();
         self.game = Game::new(self.game_size);
         self.reset_difficulty();
