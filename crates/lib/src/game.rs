@@ -14,6 +14,7 @@ pub struct Game {
     food: RefCell<Pos>,
     direction: RefCell<MoveTo>,
     stats: RefCell<Stats>,
+    last_event: RefCell<Option<GameEvent>>,
 }
 
 impl Game {
@@ -23,9 +24,8 @@ impl Game {
         let s = Self {
             size,
             snake: RefCell::new(snake),
-            food: RefCell::new((0, 0).into()),
-            direction: RefCell::new(MoveTo::Right),
-            stats: RefCell::new(Stats::default()),
+            last_event: RefCell::new(Some(GameEvent::GameStart)),
+            ..Default::default()
         };
         s.update_food();
         s
@@ -51,10 +51,12 @@ impl Game {
         let next = self.get_next_pos(to);
         if self.is_in_snake(next) {
             self.set_status(GameStatus::Fail);
+            self.set_event(GameEvent::Fail);
             return;
         }
         if next == self.food() {
             self.grow_to_pos(next);
+            self.set_event(GameEvent::FoodEat);
         } else {
             self.move_to_pos(next);
         }
@@ -80,6 +82,17 @@ impl Game {
             .expect("snake can't be empty")
             .to_owned()
     }
+    /// Last occured event
+    pub fn last_event(&self) -> Option<GameEvent> {
+        self.last_event.borrow_mut().take().to_owned()
+    }
+    /// Mark event processed
+    pub fn forgot_event(&self, event: GameEvent) {
+        let mut e = self.last_event.borrow_mut();
+        if e.is_some_and(|e| e.eq(&event)) {
+            e.take();
+        }
+    }
 
     fn is_in_snake(&self, pos: Pos) -> bool {
         self.snake.borrow().contains(&pos)
@@ -97,6 +110,7 @@ impl Game {
     fn update_food(&self) {
         if !self.can_place_new_food() {
             self.set_status(GameStatus::Win);
+            self.set_event(GameEvent::Win);
             return;
         }
 
@@ -111,6 +125,9 @@ impl Game {
     }
     fn set_direction(&self, to: MoveTo) {
         *self.direction.borrow_mut() = to;
+    }
+    fn set_event(&self, event: GameEvent) {
+        *self.last_event.borrow_mut() = Some(event)
     }
 
     fn get_next_pos(&self, to: MoveTo) -> Pos {
@@ -144,6 +161,15 @@ impl Game {
 pub enum GameStatus {
     #[default]
     Play,
+    Fail,
+    Win,
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub enum GameEvent {
+    #[default]
+    GameStart,
+    FoodEat,
     Fail,
     Win,
 }
