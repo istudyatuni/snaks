@@ -79,12 +79,10 @@ impl App {
 
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         self.read_achivement();
+        self.update_fps();
 
         let mut global_tick = Instant::now();
         let mut snake_tick = Instant::now();
-
-        self.ui_fps = DEFAULT_UI_FPS;
-        self.event_fps = DEFAULT_EVENT_FPS;
 
         while !self.exited() {
             self.handle_error()?;
@@ -243,7 +241,7 @@ impl App {
         self.ui_fps = std::cmp::min(DEFAULT_UI_FPS, fps);
         self.event_fps = std::cmp::min(DEFAULT_EVENT_FPS, fps);
         self.debug_info.fps = format!(
-            "FPS (snake / ui / event): {} / {} / {}",
+            "{} / {} / {}",
             self.difficulty.fps,
             dur2fps(self.ui_fps),
             dur2fps(self.event_fps),
@@ -397,7 +395,8 @@ impl App {
             format!("Field size: {}", self.game_size).into(),
             format!("Food: {}", self.game.food()).into(),
             format!("Snake head: {}", self.game.head()).into(),
-            self.debug_info.fps.as_str().into(),
+            "FPS (snake / ui / event):".into(),
+            format!("  {}", self.debug_info.fps).into(),
             format!("Snake direction: {}", self.game.direction()).into(),
         ];
         Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
