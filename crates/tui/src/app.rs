@@ -165,6 +165,9 @@ impl App {
     fn selecting_difficulty(&self) -> bool {
         self.state == AppState::SelectDifficulty
     }
+    fn difficulty_changed(&self) -> bool {
+        self.difficulty.prev != self.difficulty.kind
+    }
 
     // -------- set values --------
 
@@ -177,7 +180,7 @@ impl App {
         self.reset_app_state();
     }
     fn submit_difficulty(&mut self) {
-        if self.difficulty.prev == self.difficulty.kind {
+        if !self.difficulty_changed() {
             self.unpause();
             self.reset_app_state();
             return;
@@ -314,7 +317,7 @@ impl App {
                 line.push(d.to_string().into());
             }
         }
-        let text: Vec<_> = vec![
+        let mut text: Vec<_> = vec![
             "".into(),
             line.into(),
             "".into(),
@@ -327,6 +330,9 @@ impl App {
             .into(),
             vec!["Press ".into(), "d".blue(), " to cancel".into()].into(),
         ];
+        if self.difficulty_changed() {
+            text.extend_from_slice(&["".into(), "Game will restart".into()]);
+        }
         Paragraph::new::<Vec<_>>(text).block(Block::new())
     }
 
