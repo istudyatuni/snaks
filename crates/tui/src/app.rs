@@ -329,20 +329,24 @@ impl App {
     fn render_frame(&self, frame: &mut Frame) {
         frame.render_widget(self, frame.size());
 
-        let contraints = [25, 50, 25];
-        let contraints = contraints.map(Constraint::Percentage);
+        let contraints = [25, 50, 25].map(Constraint::Percentage);
         let outer = Layout::horizontal(contraints).split(frame.size());
+        let debug = Layout::vertical(contraints).split(outer[0]);
         let field = Layout::vertical(contraints).split(outer[1]);
 
-        let contraints = [26, 50];
-        let contraints = contraints.map(Constraint::Percentage);
+        let contraints = [26, 50].map(Constraint::Percentage);
         let achivements = Layout::vertical(contraints).split(outer[2]);
 
-        let contraints = if self.debug { [10, 90] } else { [65, 35] };
-        let contraints = contraints.map(Constraint::Percentage);
+        let contraints = [65, 35].map(Constraint::Percentage);
         let stats = Layout::vertical(contraints).split(field[0]);
 
+        let contraints = [30, 70].map(Constraint::Percentage);
+        let debug = Layout::horizontal(contraints).split(debug[1]);
+
         frame.render_widget(self.info_block(), stats[1]);
+        if self.debug {
+            frame.render_widget(self.debug_block(), debug[1]);
+        }
         if self.selecting_difficulty() {
             frame.render_widget(self.difficulty_select(), field[1]);
         } else {
@@ -385,18 +389,18 @@ impl App {
         if show_pause {
             text.push("Pause".yellow().into());
         }
-        if self.debug {
-            if !show_pause && stats.status == GameStatus::Play {
-                text.push("".into());
-            }
-            text.push(format!("Block size: {}", self.block_size).into());
-            text.push(format!("Field size: {}", self.game_size).into());
-            text.push(format!("Food: {}", self.game.food()).into());
-            text.push(format!("Snake head: {}", self.game.head()).into());
-            text.push(self.debug_info.fps.as_str().into());
-            text.push(format!("Snake direction: {}", self.game.direction()).into());
-        }
         Paragraph::new(text).block(Block::new())
+    }
+    fn debug_block(&self) -> impl Widget + '_ {
+        let text = vec![
+            format!("Block size: {}", self.block_size).into(),
+            format!("Field size: {}", self.game_size).into(),
+            format!("Food: {}", self.game.food()).into(),
+            format!("Snake head: {}", self.game.head()).into(),
+            self.debug_info.fps.as_str().into(),
+            format!("Snake direction: {}", self.game.direction()).into(),
+        ];
+        Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
     }
     /// Block with difficulty select
     fn difficulty_select(&self) -> impl Widget + '_ {
