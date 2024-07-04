@@ -11,14 +11,14 @@ use ratatui::{
     widgets::{
         block::{Position, Title},
         canvas::Canvas,
-        Block, Paragraph, Widget,
+        Block, Padding, Paragraph, Widget,
     },
     Frame,
 };
 
 use lib::{CoordType, Game, GameStatus, MoveTo, Pos};
 
-use crate::snake::SnakeField;
+use crate::{achive::read_achivements, snake::SnakeField};
 use crate::{
     achive::{save_achivement, Achivement},
     difficulty::*,
@@ -52,6 +52,8 @@ pub struct App {
     ui_fps: Duration,
     event_fps: Duration,
     paused: bool,
+    achivements: Vec<Achivement>,
+
     debug: bool,
     debug_info: Debug,
     error: Option<Result<()>>,
@@ -240,6 +242,10 @@ impl App {
         }) {
             self.error = Some(e);
         }
+        match read_achivements() {
+            Ok(a) => self.achivements = a,
+            e @ Err(_) => self.error = Some(e.map(|_| ())),
+        }
     }
 
     // -------- set game states --------
@@ -297,10 +303,14 @@ impl App {
     fn render_frame(&self, frame: &mut Frame) {
         frame.render_widget(self, frame.size());
 
-        let contraints = [25, 50];
+        let contraints = [25, 50, 25];
         let contraints = contraints.map(Constraint::Percentage);
         let outer = Layout::horizontal(contraints).split(frame.size());
         let field = Layout::vertical(contraints).split(outer[1]);
+
+        let contraints = [26, 50];
+        let contraints = contraints.map(Constraint::Percentage);
+        let achivements = Layout::vertical(contraints).split(outer[2]);
 
         let contraints = if self.debug { [10, 90] } else { [65, 35] };
         let contraints = contraints.map(Constraint::Percentage);
@@ -311,6 +321,7 @@ impl App {
             frame.render_widget(self.difficulty_select(), field[1]);
         } else {
             frame.render_widget(self.field_canvas(field[1]), field[1]);
+            frame.render_widget(self.achivements_block(), achivements[1]);
         }
     }
     /// Canvas with snake field
@@ -388,7 +399,35 @@ impl App {
         if self.difficulty_changed() {
             text.extend_from_slice(&["".into(), "Game will restart".into()]);
         }
-        Paragraph::new::<Vec<_>>(text).block(Block::new())
+        Paragraph::new(text).block(Block::new())
+    }
+    /// Block with achivements. Only for current difficulty
+    fn achivements_block(&self) -> impl Widget + '_ {
+        let achivements: Vec<_> = self
+            .achivements
+            .iter()
+            .filter(|a| a.difficulty == self.difficulty.kind)
+            .map(|a| {
+                vec![
+                    a.username.to_owned().blue(),
+                    " ".into(),
+                    a.score.to_string().into(),
+                ]
+                .into()
+            })
+            .collect();
+
+        let mut text: Vec<_> = vec![
+            vec![
+                "Achivements on ".into(),
+                self.difficulty.kind.to_string().blue(),
+            ]
+            .into(),
+            "".into(),
+        ];
+        text.extend_from_slice(&achivements);
+
+        Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
     }
 
     // -------- render utilities --------
