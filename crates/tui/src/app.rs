@@ -31,6 +31,8 @@ pub const fn dur2fps(dur: Duration) -> u64 {
 const FPS20: Duration = fps(20);
 const FPS60: Duration = fps(60);
 
+const DEFAULT_FPS: Duration = FPS20;
+
 const DRAW_MARKER: Marker = Marker::Block;
 
 /// Scale frame size to number of cells
@@ -43,6 +45,7 @@ pub struct App {
     game_size: Pos,
     state: AppState,
     difficulty: Difficulty,
+    fps: Duration,
     paused: bool,
     debug: bool,
 }
@@ -62,9 +65,11 @@ impl App {
         let mut global_tick = Instant::now();
         let mut snake_tick = Instant::now();
 
+        self.fps = DEFAULT_FPS;
+
         while !self.exited() {
-            if global_tick.elapsed() < FPS20 {
-                std::thread::sleep(FPS20 - global_tick.elapsed());
+            if global_tick.elapsed() < self.fps {
+                std::thread::sleep(self.fps - global_tick.elapsed());
             }
             global_tick = Instant::now();
             term.draw(|f| {
@@ -196,6 +201,7 @@ impl App {
         }
         self.difficulty.prev = self.difficulty.kind;
         self.difficulty.update_fps();
+        self.fps = std::cmp::min(DEFAULT_FPS, self.difficulty.fps.duration());
         self.restart();
     }
 
