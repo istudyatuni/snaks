@@ -310,7 +310,7 @@ impl App {
             text.push(format!("Block size: {}", self.block_size).into());
             text.push(format!("Field size: {}", self.game_size).into());
             text.push(format!("Food: {}", self.game.food()).into());
-            text.push(format!("Snake head: {}", self.game.snake().last().unwrap()).into());
+            text.push(format!("Snake head: {}", self.game.head()).into());
             text.push(format!("Snake FPS: {}", self.difficulty.fps).into());
             text.push(format!("Snake direction: {}", self.game.direction()).into());
         }
