@@ -174,8 +174,11 @@ impl App {
     fn select_difficulty(&mut self, d: DifficultyKind) {
         self.difficulty.kind = d;
     }
-    fn undo_difficulty(&mut self) {
+    fn reset_difficulty(&mut self) {
         self.difficulty.kind = self.difficulty.prev;
+    }
+    fn undo_difficulty(&mut self) {
+        self.reset_difficulty();
         self.unpause();
         self.reset_app_state();
     }
@@ -220,6 +223,7 @@ impl App {
     fn restart(&mut self) {
         self.scale_game_field();
         self.game = Game::new(self.game_size);
+        self.reset_difficulty();
         self.unpause();
         self.reset_app_state();
     }
