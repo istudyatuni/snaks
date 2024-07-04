@@ -18,8 +18,11 @@ use ratatui::{
 
 use lib::{CoordType, Game, GameStatus, MoveTo, Pos};
 
-use crate::difficulty::*;
 use crate::snake::SnakeField;
+use crate::{
+    achive::{save_achivement, Achivement},
+    difficulty::*,
+};
 
 // interesting, dur2fps(fps(60)) == 62
 pub const fn fps(fps: u64) -> Duration {
@@ -51,6 +54,7 @@ pub struct App {
     paused: bool,
     debug: bool,
     debug_info: Debug,
+    error: Option<Result<()>>,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
@@ -72,6 +76,8 @@ impl App {
         self.event_fps = DEFAULT_EVENT_FPS;
 
         while !self.exited() {
+            self.handle_error()?;
+
             if global_tick.elapsed() < self.ui_fps {
                 std::thread::sleep(self.ui_fps - global_tick.elapsed());
             }
@@ -96,6 +102,10 @@ impl App {
                 snake_tick = Instant::now();
             }
         }
+
+        self.save_achivement();
+        self.handle_error()?;
+
         Ok(())
     }
 
@@ -183,6 +193,9 @@ impl App {
     fn difficulty_changed(&self) -> bool {
         self.difficulty.prev != self.difficulty.kind
     }
+    fn handle_error(&mut self) -> Result<()> {
+        self.error.take().transpose().map(|_| ())
+    }
 
     // -------- set values --------
 
@@ -219,6 +232,15 @@ impl App {
             dur2fps(self.event_fps),
         );
     }
+    fn save_achivement(&mut self) {
+        if let e @ Err(_) = save_achivement(Achivement {
+            username: whoami::username(),
+            difficulty: self.difficulty.kind,
+            score: self.game.stats().score,
+        }) {
+            self.error = Some(e);
+        }
+    }
 
     // -------- set game states --------
 
@@ -248,6 +270,8 @@ impl App {
     // -------- set game values --------
 
     fn restart(&mut self) {
+        self.save_achivement();
+
         self.scale_game_field();
         self.game = Game::new(self.game_size);
         self.reset_difficulty();

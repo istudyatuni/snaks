@@ -9,6 +9,8 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow.workspace = true
+dirs.workspace = true
 ratatui.workspace = true
+whoami.workspace = true
 
 lib.workspace = true

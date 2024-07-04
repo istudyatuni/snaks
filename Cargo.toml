@@ -9,8 +9,10 @@ edition = "2021"
 
 [workspace.dependencies]
 anyhow = "1.0.86"
+dirs = "5.0.1"
 rand = "0.8.5"
 ratatui = "0.27.0"
+whoami = { version = "1.5.1", default-features = false }
 
 lib = { package = "snaks-lib", path = "crates/lib" }
 

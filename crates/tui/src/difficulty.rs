@@ -1,4 +1,4 @@
-use std::{fmt::Display, time::Duration};
+use std::{fmt::Display, str::FromStr, time::Duration};
 
 use super::app::{dur2fps, fps};
 
@@ -44,7 +44,7 @@ pub const DIFFICULTIES: [DifficultyKind; 5] = [
     DifficultyKind::Impossible,
 ];
 
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DifficultyKind {
     Easy,
     #[default]
@@ -102,5 +102,23 @@ impl Display for DifficultyKind {
             Self::Secret => "Secret",
         };
         f.pad(s)
+    }
+}
+
+impl FromStr for DifficultyKind {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.to_lowercase();
+        let d = match s.as_str() {
+            "easy" => Self::Easy,
+            "normal" => Self::Normal,
+            "medium" => Self::Medium,
+            "hard" => Self::Hard,
+            "impossible" => Self::Impossible,
+            "secret" => Self::Secret,
+            _ => return Err("unknown difficulty"),
+        };
+        Ok(d)
     }
 }
