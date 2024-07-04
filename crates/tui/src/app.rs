@@ -18,7 +18,10 @@ use ratatui::{
 
 use lib::{CoordType, Game, GameStatus, MoveTo, Pos};
 
-use crate::{achive::read_achivements, snake::SnakeField};
+use crate::{
+    achive::{achivements2map, read_achivements, AchivementMap},
+    snake::SnakeField,
+};
 use crate::{
     achive::{save_achivement, Achivement},
     difficulty::*,
@@ -56,6 +59,7 @@ pub struct App {
 
     show_all_achivements: bool,
     achivements: Vec<Achivement>,
+    achivements_map: AchivementMap,
 
     debug: bool,
     debug_info: Debug,
@@ -248,8 +252,12 @@ impl App {
         }
         match read_achivements() {
             Ok(a) => self.achivements = a,
-            e @ Err(_) => self.error = Some(e.map(|_| ())),
+            e @ Err(_) => {
+                self.error = Some(e.map(|_| ()));
+                return;
+            }
         }
+        self.achivements_map = achivements2map(self.achivements.clone());
     }
 
     // -------- set game states --------
@@ -410,28 +418,11 @@ impl App {
     }
     /// Block with achivements. Only for current difficulty
     fn achivements_block(&self) -> impl Widget + '_ {
-        let achivements: Vec<_> = self
-            .achivements
-            .iter()
-            .filter(|a| {
-                if self.show_all_achivements {
-                    true
-                } else {
-                    a.difficulty == self.difficulty.kind
-                }
-            })
-            .map(|a| {
-                let mut line = vec![
-                    a.username.to_owned().blue(),
-                    " ".into(),
-                    a.score.to_string().into(),
-                ];
-                if self.show_all_achivements {
-                    line.extend_from_slice(&[" ".into(), a.difficulty.to_string().blue()]);
-                }
-                line.into()
-            })
-            .collect();
+        let achivements: Vec<_> = if self.show_all_achivements {
+            self.all_achivements()
+        } else {
+            self.achivements_on_difficulty()
+        };
 
         let mut text: Vec<_> = if self.show_all_achivements {
             vec![vec!["Achivements".into()].into()]
@@ -494,6 +485,44 @@ impl App {
         }
         show_keybind("Quit", "q", false);
         Line::from(instructions)
+    }
+    /// Group achivements by user
+    fn all_achivements(&self) -> Vec<Line<'_>> {
+        self.achivements_map
+            .iter()
+            .flat_map(|(user, a)| {
+                let a: Vec<_> = a
+                    .iter()
+                    .map(|a| {
+                        vec![
+                            "  ".into(),
+                            a.difficulty.to_string().blue(),
+                            " ".into(),
+                            a.score.to_string().into(),
+                        ]
+                        .into()
+                    })
+                    .collect();
+                let mut res = vec![vec![user.clone().blue()].into()];
+                res.extend_from_slice(&a);
+                res
+            })
+            .collect()
+    }
+    /// Show users achivements on current difficulty
+    fn achivements_on_difficulty(&self) -> Vec<Line<'_>> {
+        self.achivements
+            .iter()
+            .filter(|a| a.difficulty == self.difficulty.kind)
+            .map(|a| {
+                vec![
+                    a.username.to_owned().blue(),
+                    " ".into(),
+                    a.score.to_string().into(),
+                ]
+                .into()
+            })
+            .collect()
     }
 }
 

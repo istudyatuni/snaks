@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::{anyhow, Context, Result};
 
@@ -7,7 +7,9 @@ use crate::difficulty::DifficultyKind;
 const FILE: &str = "achivements.csv";
 const SEP: &str = ";";
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub type AchivementMap = HashMap<String, Vec<Achivement>>;
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Achivement {
     pub username: String,
     pub difficulty: DifficultyKind,
@@ -76,6 +78,16 @@ pub fn read_achivements() -> Result<Vec<Achivement>> {
             })
         })
         .collect()
+}
+
+pub fn achivements2map(achivements: Vec<Achivement>) -> AchivementMap {
+    let mut res = HashMap::new();
+    for a in achivements {
+        res.entry(a.username.clone())
+            .and_modify(|e: &mut Vec<_>| e.push(a.clone()))
+            .or_insert(vec![a]);
+    }
+    res
 }
 
 fn achivements_header() -> String {
