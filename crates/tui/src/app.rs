@@ -31,7 +31,8 @@ pub const fn dur2fps(dur: Duration) -> u64 {
 const FPS20: Duration = fps(20);
 const FPS60: Duration = fps(60);
 
-const DEFAULT_FPS: Duration = FPS20;
+const DEFAULT_UI_FPS: Duration = FPS20;
+const DEFAULT_EVENT_FPS: Duration = FPS60;
 
 const DRAW_MARKER: Marker = Marker::Block;
 
@@ -45,9 +46,11 @@ pub struct App {
     game_size: Pos,
     state: AppState,
     difficulty: Difficulty,
-    fps: Duration,
+    ui_fps: Duration,
+    event_fps: Duration,
     paused: bool,
     debug: bool,
+    debug_info: Debug,
 }
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy)]
@@ -65,11 +68,12 @@ impl App {
         let mut global_tick = Instant::now();
         let mut snake_tick = Instant::now();
 
-        self.fps = DEFAULT_FPS;
+        self.ui_fps = DEFAULT_UI_FPS;
+        self.event_fps = DEFAULT_EVENT_FPS;
 
         while !self.exited() {
-            if global_tick.elapsed() < self.fps {
-                std::thread::sleep(self.fps - global_tick.elapsed());
+            if global_tick.elapsed() < self.ui_fps {
+                std::thread::sleep(self.ui_fps - global_tick.elapsed());
             }
             global_tick = Instant::now();
             term.draw(|f| {
@@ -98,7 +102,7 @@ impl App {
     // -------- handle events --------
 
     fn handle_events(&mut self) -> Result<()> {
-        if event::poll(FPS60)? {
+        if event::poll(self.event_fps)? {
             match event::read()? {
                 Event::Key(e) if e.kind == KeyEventKind::Press => self.handle_key_event(e),
                 _ => {}
@@ -201,8 +205,19 @@ impl App {
         }
         self.difficulty.prev = self.difficulty.kind;
         self.difficulty.update_fps();
-        self.fps = std::cmp::min(DEFAULT_FPS, self.difficulty.fps.duration());
+        self.update_fps();
         self.restart();
+    }
+    fn update_fps(&mut self) {
+        let fps = self.difficulty.fps.duration();
+        self.ui_fps = std::cmp::min(DEFAULT_UI_FPS, fps);
+        self.event_fps = std::cmp::min(DEFAULT_EVENT_FPS, fps);
+        self.debug_info.fps = format!(
+            "FPS (snake / ui / event): {} / {} / {}",
+            self.difficulty.fps,
+            dur2fps(self.ui_fps),
+            dur2fps(self.event_fps),
+        );
     }
 
     // -------- set game states --------
@@ -317,7 +332,7 @@ impl App {
             text.push(format!("Field size: {}", self.game_size).into());
             text.push(format!("Food: {}", self.game.food()).into());
             text.push(format!("Snake head: {}", self.game.head()).into());
-            text.push(format!("Snake FPS: {}", self.difficulty.fps).into());
+            text.push(self.debug_info.fps.as_str().into());
             text.push(format!("Snake direction: {}", self.game.direction()).into());
         }
         Paragraph::new(text).block(Block::new())
@@ -409,4 +424,9 @@ impl Widget for &App {
             .border_set(border::THICK)
             .render(area, buf);
     }
+}
+
+#[derive(Debug, Default)]
+struct Debug {
+    fps: String,
 }
