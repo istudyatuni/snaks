@@ -370,7 +370,7 @@ impl App {
                 instructions.push(SEP.into());
             }
         };
-        if self.playing() {
+        if self.playing() && !self.paused {
             show_keybind("Move", "← ↑ → ↓", true);
         } else if self.selecting_difficulty() {
             show_keybind("Select", "← →", true);
