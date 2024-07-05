@@ -365,14 +365,13 @@ impl App {
     fn info_block(&self) -> impl Widget + '_ {
         let stats = self.game.stats();
 
-        let difficulty = if self.selecting_difficulty() {
-            self.difficulty.prev
-        } else {
-            self.difficulty.kind
-        };
         let mut text = vec![
             vec!["Score ".blue(), format!("{}", stats.score).into()].into(),
-            vec!["Difficulty ".blue(), format!("{difficulty}").into()].into(),
+            vec![
+                "Difficulty ".blue(),
+                format!("{}", self.difficulty.prev).into(),
+            ]
+            .into(),
         ];
         if self.game_ended() {
             let msg = match stats.status {

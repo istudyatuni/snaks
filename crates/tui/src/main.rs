@@ -1,8 +1,8 @@
 mod achive;
 mod app;
 mod difficulty;
-mod widgets;
 mod tui;
+mod widgets;
 
 const PKG_NAME: &str = "snaks";
 
