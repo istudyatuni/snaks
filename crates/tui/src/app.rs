@@ -20,7 +20,7 @@ use lib::{CoordType, Game, GameEvent, GameStatus, MoveTo, Pos};
 
 use crate::{
     achive::{achivements2map, read_achivements, AchivementMap},
-    snake::SnakeField,
+    widgets::snake::SnakeField,
 };
 use crate::{
     achive::{save_achivement, Achivement},
