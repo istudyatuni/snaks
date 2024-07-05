@@ -65,7 +65,9 @@ pub struct App {
 enum AppState {
     #[default]
     Play,
-    SelectDifficulty,
+    SelectDifficulty {
+        was_paused: bool,
+    },
     Exit,
 }
 
@@ -154,10 +156,7 @@ impl App {
 
         // keys when playing
         match event.code {
-            KeyCode::Char('d') => {
-                self.toggle_pause();
-                self.set_select_difficulty();
-            }
+            KeyCode::Char('d') => self.set_select_difficulty(),
             KeyCode::Char('a') => self.toggle_achivements_grouped(),
             _ => {}
         }
@@ -198,7 +197,7 @@ impl App {
         self.game.stats().status != GameStatus::Play
     }
     fn selecting_difficulty(&self) -> bool {
-        self.state == AppState::SelectDifficulty
+        matches!(self.state, AppState::SelectDifficulty { .. })
     }
     fn difficulty_changed(&self) -> bool {
         self.difficulty.prev != self.difficulty.kind
@@ -217,7 +216,9 @@ impl App {
     }
     fn undo_difficulty(&mut self) {
         self.reset_difficulty();
-        self.unpause();
+        if let AppState::SelectDifficulty { was_paused: false } = self.state {
+            self.unpause();
+        }
         self.reset_app_state();
     }
     fn submit_difficulty(&mut self) {
@@ -278,7 +279,9 @@ impl App {
         self.debug = !self.debug
     }
     fn set_select_difficulty(&mut self) {
-        self.state = AppState::SelectDifficulty;
+        self.state = AppState::SelectDifficulty {
+            was_paused: self.paused,
+        };
         self.pause();
     }
     fn pause(&mut self) {
