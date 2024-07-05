@@ -389,32 +389,10 @@ impl App {
     }
     /// Block with difficulty select
     fn difficulty_select(&self) -> impl Widget + '_ {
-        let mut line = vec!["Select difficulty".bold(), ":".into()];
-        for d in DIFFICULTIES {
-            line.push(" ".into());
-            if d == self.difficulty.kind {
-                line.push(d.to_string().blue());
-            } else {
-                line.push(d.to_string().into());
-            }
+        widgets::DifficultySelect {
+            difficulty: self.difficulty.kind,
+            difficulty_changed: self.difficulty_changed(),
         }
-        let mut text: Vec<_> = vec![
-            "".into(),
-            line.into(),
-            "".into(),
-            vec![
-                "Press ".into(),
-                "Enter".blue(),
-                " to select ".into(),
-                self.difficulty.kind.to_string().blue(),
-            ]
-            .into(),
-            vec!["Press ".into(), "d".blue(), " to cancel".into()].into(),
-        ];
-        if self.difficulty_changed() {
-            text.extend_from_slice(&["".into(), "Game will restart".into()]);
-        }
-        Paragraph::new(text).block(Block::new())
     }
     /// Block with achivements. Only for current difficulty
     fn achivements_block(&self) -> impl Widget + '_ {
