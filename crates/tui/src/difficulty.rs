@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr, time::Duration};
 
 use super::app::{dur2fps, fps};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Difficulty {
     pub prev: DifficultyKind,
     pub kind: DifficultyKind,
@@ -15,7 +15,7 @@ impl Difficulty {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DifficultyFps(Duration);
 
 impl DifficultyFps {

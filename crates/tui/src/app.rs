@@ -20,7 +20,7 @@ use lib::{CoordType, Game, GameEvent, GameStatus, MoveTo, Pos};
 
 use crate::{
     achive::{achivements2map, read_achivements, AchivementMap},
-    widgets::snake::SnakeField,
+    widgets,
 };
 use crate::{
     achive::{save_achivement, Achivement},
@@ -359,34 +359,21 @@ impl App {
             .x_bounds([0.0, size.width as f64])
             .y_bounds([0.0, size.height as f64])
             .marker(DRAW_MARKER)
-            .paint(|ctx| ctx.draw(&SnakeField::new(self.game.snake(), self.game.food())))
+            .paint(|ctx| {
+                ctx.draw(&widgets::SnakeField::new(
+                    self.game.snake(),
+                    self.game.food(),
+                ))
+            })
     }
     /// Game info + debug info
     fn info_block(&self) -> impl Widget + '_ {
-        let stats = self.game.stats();
-
-        let mut text = vec![
-            vec!["Score ".blue(), format!("{}", stats.score).into()].into(),
-            vec![
-                "Difficulty ".blue(),
-                format!("{}", self.difficulty.prev).into(),
-            ]
-            .into(),
-        ];
-        if self.game_ended() {
-            let msg = match stats.status {
-                GameStatus::Fail => "Game Over".red(),
-                GameStatus::Win => "Win".green(),
-                GameStatus::Play => unreachable!(),
-            };
-            // todo: render this on top of field_canvas
-            text.push(msg.into());
+        widgets::Info {
+            difficulty: self.difficulty.clone(),
+            stats: self.game.stats(),
+            game_ended: self.game_ended(),
+            show_pause: self.paused && !self.selecting_difficulty(),
         }
-        let show_pause = self.paused && !self.selecting_difficulty();
-        if show_pause {
-            text.push("Pause".yellow().into());
-        }
-        Paragraph::new(text).block(Block::new())
     }
     fn debug_block(&self) -> impl Widget + '_ {
         let text = vec![
