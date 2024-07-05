@@ -22,12 +22,13 @@ use crate::{
 
 mod render;
 
+const FPS_CONVERT: u64 = 1000 * 1000;
 // interesting, dur2fps(fps(60)) == 62
 pub const fn fps(fps: u64) -> Duration {
-    Duration::from_millis(1000 / fps)
+    Duration::from_micros(FPS_CONVERT / fps)
 }
 pub const fn dur2fps(dur: Duration) -> u64 {
-    1000 / dur.as_millis() as u64
+    FPS_CONVERT / dur.as_micros() as u64
 }
 const FPS20: Duration = fps(20);
 const FPS60: Duration = fps(60);
