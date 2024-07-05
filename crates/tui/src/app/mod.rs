@@ -323,7 +323,9 @@ impl Widget for &App {
     where
         Self: Sized,
     {
-        let title = Title::from(" Snake Game ".bold());
+        use crate::strings::tr::widgets::app as tr;
+
+        let title = Title::from(format!(" {} ", tr::title).bold());
         let help = Title::from(self.keybind_help());
         Block::bordered()
             .title(title.alignment(Alignment::Center))

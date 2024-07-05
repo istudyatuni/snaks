@@ -20,25 +20,31 @@ impl Widget for Info {
     where
         Self: Sized,
     {
+        use crate::strings::tr::widgets::info as tr;
+
         let mut text = vec![
-            vec!["Score ".blue(), format!("{}", self.stats.score).into()].into(),
             vec![
-                "Difficulty ".blue(),
+                format!("{} ", tr::score).blue(),
+                format!("{}", self.stats.score).into(),
+            ]
+            .into(),
+            vec![
+                format!("{} ", tr::difficulty).blue(),
                 format!("{}", self.difficulty.prev).into(),
             ]
             .into(),
         ];
         if self.game_ended {
             let msg = match self.stats.status {
-                GameStatus::Fail => "Game Over".red(),
-                GameStatus::Win => "Win".green(),
+                GameStatus::Fail => tr::fail.red(),
+                GameStatus::Win => tr::win.green(),
                 GameStatus::Play => unreachable!(),
             };
             // todo: render this on top of field_canvas
             text.push(msg.into());
         }
         if self.show_pause {
-            text.push("Pause".yellow().into());
+            text.push(tr::pause.yellow().into());
         }
         Paragraph::new(text).block(Block::new()).render(area, buf)
     }

@@ -1,6 +1,7 @@
 mod achive;
 mod app;
 mod difficulty;
+mod strings;
 mod tui;
 mod widgets;
 

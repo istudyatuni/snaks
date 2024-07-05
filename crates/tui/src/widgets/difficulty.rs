@@ -16,7 +16,9 @@ impl Widget for DifficultySelect {
     where
         Self: Sized,
     {
-        let mut line = vec!["Select difficulty".bold(), ":".into()];
+        use crate::strings::tr::widgets::difficulty as tr;
+
+        let mut line = vec![tr::select.bold(), ":".into()];
         for d in DIFFICULTIES {
             line.push(" ".into());
             if d == self.difficulty {
@@ -30,16 +32,21 @@ impl Widget for DifficultySelect {
             line.into(),
             "".into(),
             vec![
-                "Press ".into(),
+                format!("{} ", tr::press).into(),
                 "Enter".blue(),
-                " to select ".into(),
+                format!(" {} ", tr::to_select).into(),
                 self.difficulty.to_string().blue(),
             ]
             .into(),
-            vec!["Press ".into(), "d".blue(), " to cancel".into()].into(),
+            vec![
+                format!("{} ", tr::press).into(),
+                "d".blue(),
+                format!(" {}", tr::to_cancel).into(),
+            ]
+            .into(),
         ];
         if self.difficulty_changed {
-            text.extend_from_slice(&["".into(), "Game will restart".into()]);
+            text.extend_from_slice(&["".into(), tr::game_restart.into()]);
         }
         Paragraph::new(text).block(Block::new()).render(area, buf)
     }

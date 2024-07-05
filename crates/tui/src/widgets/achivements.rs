@@ -22,6 +22,8 @@ impl<'ach> Widget for Achivements<'ach> {
     where
         Self: Sized,
     {
+        use crate::strings::tr::widgets::achivements as tr;
+
         let achivements: Vec<_> = if self.show_achivements_grouped {
             self.achivements_grouped()
         } else {
@@ -29,9 +31,13 @@ impl<'ach> Widget for Achivements<'ach> {
         };
 
         let mut text: Vec<_> = if self.show_achivements_grouped {
-            vec![vec!["Achivements on ".into(), self.difficulty.to_string().blue()].into()]
+            vec![vec![
+                format!("{} ", tr::achivements_on).into(),
+                self.difficulty.to_string().blue(),
+            ]
+            .into()]
         } else {
-            vec![vec!["Achivements".into()].into()]
+            vec![vec![tr::achivements.into()].into()]
         };
         text.push("".into());
         text.extend_from_slice(&achivements);

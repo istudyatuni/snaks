@@ -6,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::widgets;
+use crate::{strings::tr, widgets};
 
 use super::{App, DRAW_MARKER};
 
@@ -63,14 +63,16 @@ impl App {
         }
     }
     fn debug_block(&self) -> impl Widget + '_ {
+    	use tr::widgets::debug as tr;
+
         let text = vec![
-            format!("Block size: {}", self.block_size).into(),
-            format!("Field size: {}", self.game_size).into(),
-            format!("Food: {}", self.game.food()).into(),
-            format!("Snake head: {}", self.game.head()).into(),
-            "FPS (snake / ui / event):".into(),
+            format!("{}: {}", tr::block_size, self.block_size).into(),
+            format!("{}: {}", tr::field_size, self.game_size).into(),
+            format!("{}: {}", tr::food, self.game.food()).into(),
+            format!("{}: {}", tr::snake_head, self.game.head()).into(),
+            format!("{}:", tr::fps).into(),
             format!("  {}", self.debug_info.fps).into(),
-            format!("Snake direction: {}", self.game.direction()).into(),
+            format!("{}: {}", tr::snake_direction, self.game.direction()).into(),
         ];
         Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
     }
@@ -94,6 +96,8 @@ impl App {
     // -------- render utilities --------
 
     pub(super) fn keybind_help(&self) -> Line<'_> {
+    	use tr::keybind as tr;
+
         let mut instructions = vec![];
         let mut show_keybind = |name: &'static str, key: &'static str, sep| {
             const SP: &str = " ";
@@ -110,32 +114,32 @@ impl App {
             }
         };
         if self.playing() && !self.paused {
-            show_keybind("Move", "← ↑ → ↓", true);
+            show_keybind(tr::r#move, "← ↑ → ↓", true);
         } else if self.selecting_difficulty() {
-            show_keybind("Select", "← →", true);
-            show_keybind("Submit", "Enter", true);
-            show_keybind("Cancel", "d", true);
+            show_keybind(tr::select, "← →", true);
+            show_keybind(tr::submit, "Enter", true);
+            show_keybind(tr::cancel, "d", true);
         }
         if self.playing() && !self.game_ended() {
             if !self.paused {
-                show_keybind("Pause", "Esc", true);
+                show_keybind(tr::pause, "Esc", true);
             } else if self.paused {
-                show_keybind("Resume", "Esc", true);
+                show_keybind(tr::resume, "Esc", true);
             }
         }
         if !self.selecting_difficulty() {
             if self.show_achivements_grouped {
-                show_keybind("Show achivements by user", "a", true);
+                show_keybind(tr::achivements_by_user, "a", true);
             } else {
-                show_keybind("Show achivements summary", "a", true);
+                show_keybind(tr::achivements_summary, "a", true);
             }
-            show_keybind("Difficulty", "d", true);
+            show_keybind(tr::difficulty, "d", true);
         }
-        show_keybind("Restart", "r", true);
+        show_keybind(tr::restart, "r", true);
         if self.debug {
-            show_keybind("Debug", "F3", true);
+            show_keybind(tr::debug, "F3", true);
         }
-        show_keybind("Quit", "q", false);
+        show_keybind(tr::quit, "q", false);
         Line::from(instructions)
     }
 }
