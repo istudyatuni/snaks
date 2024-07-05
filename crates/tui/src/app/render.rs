@@ -19,6 +19,10 @@ impl App {
         let debug = Layout::vertical(contraints).split(outer[0]);
         let field = Layout::vertical(contraints).split(outer[1]);
 
+        let contraints = [50, 50].map(Constraint::Percentage);
+        let over_field = Layout::vertical(contraints).split(field[1]);
+        let over_field = Layout::horizontal(contraints).split(over_field[1]);
+
         let contraints = [26, 50].map(Constraint::Percentage);
         let achivements = Layout::vertical(contraints).split(outer[2]);
 
@@ -36,6 +40,7 @@ impl App {
             frame.render_widget(self.difficulty_select(), field[1]);
         } else {
             frame.render_widget(self.field_canvas(field[1]), field[1]);
+            frame.render_widget(self.finish_block(), over_field[1]);
             frame.render_widget(self.achivements_block(), achivements[1]);
         }
     }
@@ -58,12 +63,11 @@ impl App {
         widgets::Info {
             difficulty: self.difficulty.clone(),
             stats: self.game.stats(),
-            game_ended: self.game_ended(),
             show_pause: self.paused && !self.selecting_difficulty(),
         }
     }
     fn debug_block(&self) -> impl Widget + '_ {
-    	use tr::widgets::debug as tr;
+        use tr::widgets::debug as tr;
 
         let text = vec![
             format!("{}: {}", tr::block_size, self.block_size).into(),
@@ -92,11 +96,20 @@ impl App {
             achivements_map: &self.achivements_map,
         }
     }
+    fn finish_block(&self) -> impl Widget + '_ {
+        use widgets::FinishState;
+        let state = match self.game.stats().status {
+            lib::GameStatus::Play => None,
+            lib::GameStatus::Fail => Some(FinishState::Fail),
+            lib::GameStatus::Win => Some(FinishState::Win),
+        };
+        widgets::Finish { state }
+    }
 
     // -------- render utilities --------
 
     pub(super) fn keybind_help(&self) -> Line<'_> {
-    	use tr::keybind as tr;
+        use tr::keybind as tr;
 
         let mut instructions = vec![];
         let mut show_keybind = |name: &'static str, key: &'static str, sep| {

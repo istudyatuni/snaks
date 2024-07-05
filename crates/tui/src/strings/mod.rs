@@ -37,12 +37,14 @@ pub mod tr {
                 game_restart = "Game will restart",
             }
         }
-        pub mod info {
+        pub mod finish {
             strings! {
-                score = "Score",
                 fail = "Game Over",
                 win = "Win",
             }
+        }
+        pub mod info {
+            strings! { score = "Score" }
             pub use super::super::common::{difficulty, pause};
         }
     }

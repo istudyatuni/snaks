@@ -5,13 +5,12 @@ use ratatui::{
 
 use crate::difficulty::Difficulty;
 
-use lib::{GameStatus, Stats};
+use lib::Stats;
 
 #[derive(Debug)]
 pub struct Info {
     pub difficulty: Difficulty,
     pub stats: Stats,
-    pub game_ended: bool,
     pub show_pause: bool,
 }
 
@@ -34,15 +33,6 @@ impl Widget for Info {
             ]
             .into(),
         ];
-        if self.game_ended {
-            let msg = match self.stats.status {
-                GameStatus::Fail => tr::fail.red(),
-                GameStatus::Win => tr::win.green(),
-                GameStatus::Play => unreachable!(),
-            };
-            // todo: render this on top of field_canvas
-            text.push(msg.into());
-        }
         if self.show_pause {
             text.push(tr::pause.yellow().into());
         }
