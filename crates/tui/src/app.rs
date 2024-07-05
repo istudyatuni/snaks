@@ -396,25 +396,12 @@ impl App {
     }
     /// Block with achivements. Only for current difficulty
     fn achivements_block(&self) -> impl Widget + '_ {
-        let achivements: Vec<_> = if self.show_achivements_grouped {
-            self.achivements_grouped()
-        } else {
-            self.achivements_by_user()
-        };
-
-        let mut text: Vec<_> = if self.show_achivements_grouped {
-            vec![vec![
-                "Achivements on ".into(),
-                self.difficulty.kind.to_string().blue(),
-            ]
-            .into()]
-        } else {
-            vec![vec!["Achivements".into()].into()]
-        };
-        text.push("".into());
-        text.extend_from_slice(&achivements);
-
-        Paragraph::new(text).block(Block::new().padding(Padding::uniform(1)))
+        widgets::Achivements {
+            difficulty: self.difficulty.kind,
+            show_achivements_grouped: self.show_achivements_grouped,
+            achivements: &self.achivements,
+            achivements_map: &self.achivements_map,
+        }
     }
 
     // -------- render utilities --------
@@ -463,44 +450,6 @@ impl App {
         }
         show_keybind("Quit", "q", false);
         Line::from(instructions)
-    }
-    /// Group achivements by user
-    fn achivements_by_user(&self) -> Vec<Line<'_>> {
-        self.achivements_map
-            .iter()
-            .flat_map(|(user, a)| {
-                let a: Vec<_> = a
-                    .iter()
-                    .map(|a| {
-                        vec![
-                            "  ".into(),
-                            a.difficulty.to_string().blue(),
-                            " ".into(),
-                            a.score.to_string().into(),
-                        ]
-                        .into()
-                    })
-                    .collect();
-                let mut res = vec![vec![user.clone().blue()].into()];
-                res.extend_from_slice(&a);
-                res
-            })
-            .collect()
-    }
-    /// Show all achivements on current difficulty
-    fn achivements_grouped(&self) -> Vec<Line<'_>> {
-        self.achivements
-            .iter()
-            .filter(|a| a.difficulty == self.difficulty.kind)
-            .map(|a| {
-                vec![
-                    a.username.to_owned().blue(),
-                    " ".into(),
-                    a.score.to_string().into(),
-                ]
-                .into()
-            })
-            .collect()
     }
 }
 
