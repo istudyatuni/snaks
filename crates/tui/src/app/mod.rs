@@ -73,8 +73,6 @@ enum AppState {
 }
 
 impl App {
-    // -------- run --------
-
     pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
         self.read_achivement();
         self.update_fps();
