@@ -263,7 +263,7 @@ impl App {
                 return;
             }
         }
-        self.achivements_map = achivements2map(self.achivements.clone());
+        self.achivements_map = achivements2map(&self.achivements);
     }
 
     // -------- set game states --------

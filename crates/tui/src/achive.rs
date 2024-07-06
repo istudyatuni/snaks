@@ -93,12 +93,12 @@ pub fn read_achivements() -> Result<Vec<Achivement>> {
         .collect()
 }
 
-pub fn achivements2map(achivements: Vec<Achivement>) -> AchivementMap {
+pub fn achivements2map(achivements: &[Achivement]) -> AchivementMap {
     let mut res = HashMap::new();
     for a in achivements {
         res.entry(a.username.clone())
             .and_modify(|e: &mut Vec<_>| e.push(a.clone()))
-            .or_insert(vec![a]);
+            .or_insert(vec![a.clone()]);
     }
     res
 }
