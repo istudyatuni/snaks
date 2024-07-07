@@ -28,28 +28,35 @@ impl Ord for Achivement {
     }
 }
 
-pub fn save_achivement(achivement: Achivement) -> Result<()> {
+/// Returns Ok(Some(_)) if file was updated
+pub fn save_achivement(achivement: Achivement) -> Result<Option<Vec<Achivement>>> {
     let mut achivements = read_achivements()?;
+    let mut updated = true;
     if let Some(found) = achivements
         .iter_mut()
         .find(|e| e.username == achivement.username && e.difficulty == achivement.difficulty)
     {
         if found.score < achivement.score {
             *found = achivement;
+        } else {
+            updated = false;
         }
     } else {
         achivements.push(achivement);
     }
-    achivements.sort_unstable();
+    if !updated {
+        return Ok(None);
+    }
 
+    achivements.sort_unstable();
     let res = achivements
-        .into_iter()
+        .iter()
         .map(|a| {
             if a.username.contains(SEP) {
                 return Err(anyhow!("username cannot contain {SEP}"));
             }
             Ok([
-                a.username,
+                a.username.clone(),
                 a.difficulty.to_string().to_lowercase(),
                 a.score.to_string(),
             ]
@@ -61,7 +68,7 @@ pub fn save_achivement(achivement: Achivement) -> Result<()> {
     let res = achivements_header() + "\n" + res.as_str();
     std::fs::write(achivements_file(), res).context("failed to write achivements")?;
 
-    Ok(())
+    Ok(Some(achivements))
 }
 
 pub fn read_achivements() -> Result<Vec<Achivement>> {

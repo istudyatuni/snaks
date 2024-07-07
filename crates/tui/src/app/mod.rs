@@ -243,26 +243,25 @@ impl App {
         );
     }
     fn update_achivement(&mut self) {
-        self.save_achivement();
-        self.read_achivement();
-    }
-    fn save_achivement(&mut self) {
-        if let e @ Err(_) = save_achivement(Achivement {
+        let res = save_achivement(Achivement {
             username: whoami::username(),
             difficulty: self.difficulty.kind,
             score: self.game.stats().score,
-        }) {
-            self.error = Some(e);
+        });
+        match res {
+            Ok(Some(a)) => self.save_achivements(a),
+            Ok(None) => {}
+            e @ Err(_) => self.error = Some(e.map(|_| ())),
         }
     }
     fn read_achivement(&mut self) {
         match read_achivements() {
-            Ok(a) => self.achivements = a,
-            e @ Err(_) => {
-                self.error = Some(e.map(|_| ()));
-                return;
-            }
+            Ok(a) => self.save_achivements(a),
+            e @ Err(_) => self.error = Some(e.map(|_| ())),
         }
+    }
+    fn save_achivements(&mut self, achivements: Vec<Achivement>) {
+        self.achivements = achivements;
         self.achivements_map = achivements2map(&self.achivements);
     }
 
