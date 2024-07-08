@@ -53,6 +53,7 @@ pub struct App {
     event_fps: Duration,
     paused: bool,
 
+    user: String,
     show_achivements_grouped: bool,
     achivements: Vec<Achivement>,
     achivements_map: AchivementMap,
@@ -73,7 +74,8 @@ enum AppState {
 }
 
 impl App {
-    pub fn run(&mut self, term: &mut crate::tui::Tui) -> Result<()> {
+    pub fn run(&mut self, term: &mut crate::tui::Tui, user: String) -> Result<()> {
+        self.user = user;
         self.read_achivement();
         self.update_fps();
 
@@ -244,7 +246,7 @@ impl App {
     }
     fn update_achivement(&mut self) {
         let res = save_achivement(Achivement {
-            username: whoami::username(),
+            username: self.user.clone(),
             difficulty: self.difficulty.kind,
             score: self.game.stats().score,
         });
