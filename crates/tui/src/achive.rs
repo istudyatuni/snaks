@@ -64,7 +64,15 @@ pub fn save_achivement(
         .collect::<Result<String>>()?;
 
     let res = achivements_header() + "\n" + res.as_str();
-    std::fs::write(achivements_file(), res).context("failed to write achivements")?;
+
+    std::thread::spawn(|| {
+        if let Err(e) = std::fs::write(achivements_file(), res) {
+            let _ = std::fs::write(
+                error_log_file(),
+                format!("failed to write achivements: {e}"),
+            );
+        }
+    });
 
     Ok(Some(achivements))
 }
@@ -114,6 +122,10 @@ fn achivements_header() -> String {
 
 fn achivements_file() -> PathBuf {
     config_dif().join(FILE)
+}
+
+fn error_log_file() -> PathBuf {
+    config_dif().join("error.log")
 }
 
 fn config_dif() -> PathBuf {
