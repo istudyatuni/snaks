@@ -245,11 +245,12 @@ impl App {
         );
     }
     fn update_achivement(&mut self) {
-        let res = save_achivement(Achivement {
+        let achivement = Achivement {
             username: self.user.clone(),
             difficulty: self.difficulty.kind,
             score: self.game.stats().score,
-        });
+        };
+        let res = save_achivement(&self.achivements, achivement);
         match res {
             Ok(Some(a)) => self.save_achivements(a),
             Ok(None) => {}

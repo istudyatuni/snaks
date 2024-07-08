@@ -29,23 +29,21 @@ impl Ord for Achivement {
 }
 
 /// Returns Ok(Some(_)) if file was updated
-pub fn save_achivement(achivement: Achivement) -> Result<Option<Vec<Achivement>>> {
-    let mut achivements = read_achivements()?;
-    let mut updated = true;
-    if let Some(found) = achivements
-        .iter_mut()
-        .find(|e| e.username == achivement.username && e.difficulty == achivement.difficulty)
-    {
-        if found.score < achivement.score {
-            *found = achivement;
-        } else {
-            updated = false;
-        }
-    } else {
-        achivements.push(achivement);
-    }
-    if !updated {
-        return Ok(None);
+pub fn save_achivement(
+    achivements: &[Achivement],
+    achivement: Achivement,
+) -> Result<Option<Vec<Achivement>>> {
+    // get index instead of element to not get &mut [_] or do not clone if possible
+    let ind = achivements
+        .iter()
+        .position(|e| e.username == achivement.username && e.difficulty == achivement.difficulty);
+    let mut achivements = match ind {
+        Some(i) if achivements[i].score >= achivement.score => return Ok(None),
+        _ => achivements.to_vec(),
+    };
+    match ind {
+        Some(i) => achivements[i] = achivement,
+        None => achivements.push(achivement),
     }
 
     achivements.sort_unstable();
