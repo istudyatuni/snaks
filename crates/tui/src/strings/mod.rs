@@ -1,7 +1,6 @@
 #![allow(non_upper_case_globals)]
 
 macro_rules! strings {
-    () => {};
     ($($name:ident = $s:literal),* $(,)?) => {
         $(pub const $name: &str = $s;)*
     };
