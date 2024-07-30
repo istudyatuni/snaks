@@ -9,9 +9,12 @@ use crate::types::*;
 /// `(0, 0)` is at top left position
 #[derive(Debug, Default)]
 pub struct Game {
+    /// Field's size
     size: Pos,
+    /// List of snake's blocks
     snake: RefCell<VecDeque<Pos>>,
     food: RefCell<Pos>,
+    /// Current snake's direction
     direction: RefCell<MoveTo>,
     stats: RefCell<Stats>,
     last_event: RefCell<Option<GameEvent>>,
@@ -98,15 +101,18 @@ impl Game {
         self.snake.borrow().contains(&pos)
     }
 
+    /// Move snake to position
     fn move_to_pos(&self, to: Pos) {
         self.snake.borrow_mut().push_back(to);
         self.snake.borrow_mut().pop_front();
     }
+    /// Move snake to position and increase snake length
     fn grow_to_pos(&self, to: Pos) {
         self.snake.borrow_mut().push_back(to);
         self.add_score();
         self.update_food();
     }
+    /// Calculate position for new food and place it
     fn update_food(&self) {
         if !self.can_place_new_food() {
             self.set_status(GameStatus::Win);
@@ -130,6 +136,7 @@ impl Game {
         *self.last_event.borrow_mut() = Some(event)
     }
 
+    /// Calculate next position depending on field size and direction
     fn get_next_pos(&self, to: MoveTo) -> Pos {
         let (x, y) = (self.size.x.0, self.size.y.0);
         let shift = match to {
@@ -140,6 +147,7 @@ impl Game {
         };
         self.head().wrapping_add(shift.into(), self.size)
     }
+    /// Generate random position for food
     fn get_new_food(&self) -> Pos {
         let size = self.size;
         loop {
@@ -152,6 +160,7 @@ impl Game {
         }
     }
 
+    /// Check if field has empty cells for food
     fn can_place_new_food(&self) -> bool {
         self.snake.borrow().len() < self.size.area() as usize
     }
